@@ -12,7 +12,7 @@ Attempts to replicate the functionality of Page Properties with the following im
 - Improved support for dates
 
 
-[picture of the solution in action, if possible]
+[see the difference](diff-screencap.png)
 
 ## Used SharePoint Framework Version
 
