@@ -11,8 +11,7 @@ Attempts to replicate the functionality of Page Properties with the following im
 - Support for currency
 - Improved support for dates
 
-
-[see the difference](diff-screencap.png)
+![see the difference](diff-screencap.png)
 
 ## Used SharePoint Framework Version
 
