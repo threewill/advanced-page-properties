@@ -32,14 +32,13 @@ Attempts to replicate the functionality of Page Properties with the following im
 
 Solution|Author(s)
 --------|---------
-folder name | Author details (name, company, twitter alias with link)
+/ | Mike Homol, Principal Consultant, ThreeWill
 
 ## Version history
 
 Version|Date|Comments
 -------|----|--------
-1.1|March 10, 2021|Update comment
-1.0|January 29, 2021|Initial release
+1.0|March 30, 2021|Initial release
 
 ## Disclaimer
 
@@ -59,22 +58,17 @@ Version|Date|Comments
 
 ## Features
 
-Description of the extension that expands upon high-level summary above.
+> Add the part
 
-This extension illustrates the following concepts:
+Once the solution is installed in the app catalog and the app has been added to the site, you should see it available to a page.
 
-- topic 1
-- topic 2
-- topic 3
+![add the part](add-to-page.png)
 
-> Notice that better pictures and documentation will increase the sample usage and the value you are providing for others. Thanks for your submissions advance.
+> Familiarity is key
 
-> Share your web part with others through Microsoft 365 Patterns and Practices program to get visibility and exposure. More details on the community, open-source projects and other activities from http://aka.ms/m365pnp.
+This web part tries to mimic the original Page Properties web part as much as possible.  You should recognize the functionality of the property setup.  
 
-## References
+Basically add and remove properties until you are satisfied and you're good to go!
 
-- [Getting started with SharePoint Framework](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant)
-- [Building for Microsoft teams](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/build-for-teams-overview)
-- [Use Microsoft Graph in your solution](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-microsoft-graph-apis)
-- [Publish SharePoint Framework applications to the Marketplace](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/publish-to-marketplace-overview)
-- [Microsoft 365 Patterns and Practices](https://aka.ms/m365pnp) - Guidance, tooling, samples and open-source controls for your Microsoft 365 development
+![configure the part](props.gif)
+
