@@ -1,8 +1,16 @@
-# advanced-page-properties
+# Advanced Page Properties
 
 ## Summary
 
-Short summary on functionality and used technologies.
+Attempts to replicate the functionality of Page Properties with the following improvements:
+
+- Support for theme variants
+- Updated to standard capsule look for list options
+- Support for image fields
+- Support for hyperlink fields
+- Support for currency
+- Improved support for dates
+
 
 [picture of the solution in action, if possible]
 
