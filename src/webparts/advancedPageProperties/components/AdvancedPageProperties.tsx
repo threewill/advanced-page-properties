@@ -7,20 +7,33 @@ import { useState, useEffect, useRef } from 'react';
 import { PageProperty } from '../models';
 
 import { sp } from "@pnp/sp";
-import { FieldTypes, IField, IFieldInfo } from "@pnp/sp/fields/types";
+import { DateTimeFieldFormatType, DateTimeFieldFriendlyFormatType, FieldTypes, IField, IFieldInfo } from "@pnp/sp/fields/types";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/fields";
 import "@pnp/sp/items";
+import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
+/**
+ * AdvancedPageProperties
+ * @param props Page Properties selected for display
+ * @returns
+ */
 const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesProps> = props => {
+  // Main state object for the life of this component - pagePropValues
   const [pagePropValues, setPagePropValues] = useState<PageProperty[]>([]);
   const propsRef = useRef(props);
+
+  const { semanticColors }: IReadonlyTheme = props.themeVariant;
 
   propsRef.current = props;
 
   sp.setup({ spfxContext: props.context });
 
+  /**
+   * refreshProperties
+   * @description Gets the actual values for any selected properties, along with critical field metadata and ultimately re-sets the pagePropValues state
+   */
   async function refreshProperties () {
     var newSetOfValues: PageProperty[] = [];
 
@@ -43,19 +56,19 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
         const field = await sp.web.lists.getByTitle("Site Pages").fields.getByInternalNameOrTitle(prop)();
 
         // Establish the values array
-        var values: string[] = [];
+        var values: any[] = [];
         if (allValues.hasOwnProperty(prop)) {
           switch (field.TypeAsString) {
             case "MultiChoice":
-              values.push(allValues[prop]);
+              values = _.clone(allValues[prop]);
               break;
-
-            case "URL":
+            case "Thumbnail":
+              values.push(JSON.parse(allValues[prop]));
               break;
 
             default:
               // Default behavior is to treat it like a string
-              values.push(allValues[prop].toString());
+              values.push(allValues[prop]);
               break;
           }
         }
@@ -68,6 +81,9 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
     }
   }
 
+  /**
+   * @description Effects to fire whenever the properties change
+   */
   useEffect(() => {
     refreshProperties();
 
@@ -76,14 +92,19 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
     };
   }, [propsRef.current]);
 
+  /**
+   * RenderPageProperties
+   * @description Focuses on the 2nd row layer, which is the property names that have been chosen to be displayed (uses Title as the display name)
+   * @returns
+   */
   const RenderPageProperties = () => {
     if (pagePropValues !== undefined && pagePropValues !== null) {
       var retVal = _.map(pagePropValues, (prop) => {
         return (
             <>
-              <div className={styles.row}>{prop.info.Title} - {prop.info.TypeAsString}</div>
-              <div className={styles.row}>
-                {RenderPagePropValue(prop.values)}
+              <div className={styles.propNameRow}>{prop.info.Title}<span style={{display: 'none'}}> - {prop.info.TypeAsString}</span></div>
+              <div className={styles.propValsRow}>
+                {RenderPagePropValue(prop)}
               </div>
             </>
           );
@@ -94,15 +115,71 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
     }
   };
 
-  const RenderPagePropValue = (values: string[]) => {
-    var retVal = _.map(values, (val) => {
-      return (
-          <span>{val}</span>
-        );
+  /**
+   * RenderPagePropValue
+   * @description Focuses on the 3rd and final row layer, which is the actual values tied to any property displayed for the page
+   * @param prop
+   * @returns
+   */
+  const RenderPagePropValue = (prop: PageProperty) => {
+    console.log(prop);
+    var retVal = _.map(prop.values, (val) => {
+      switch (prop.info.TypeAsString) {
+        case "URL":
+          return (
+            <span className={styles.urlValue}><a href={val.Url} target="_blank" style={{color: semanticColors.link}}>{val.Description}</a></span>
+          );
+        case "Thumbnail":
+          return (
+            <span><img className={styles.imgValue} src={val.serverRelativeUrl} /></span>
+          );
+        case "Number":
+          return (
+            <span>{(prop.info["ShowAsPercentage"] === true ? Number(val).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}) : (prop.info["CommaSeparator"] === true ? val.toLocaleString('en') : val.toString()))}</span>
+          );
+        case "Currency":
+          return (
+            <span>{(prop.info["CommaSeparator"] === true ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val) : Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', useGrouping: false }).format(val))}</span>
+          );
+        case "DateTime":
+          //,"",,
+          switch (prop.info["DateFormat"]) {
+            case "StandardUS":
+              return (
+                <span>{new Date(val).toLocaleDateString()}</span>
+              );
+            case "ISO8601":
+              const d = new Date(val);
+              return (
+                <span>{`${d.getFullYear().toString()}-${d.getMonth()}-${d.getDate()}`}</span>
+              );
+            case "DayOfWeek":
+              return (
+                <span>{new Date(val).toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+              );
+            case "MonthSpelled":
+              return (
+                <span>{new Date(val).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+              );
+            default:
+              return (
+                <span>{new Date(val).toLocaleDateString()}</span>
+              );
+          }
+        default:
+          return (
+            <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}>{val}</span>
+          );
+      }
     });
     return retVal;
   };
 
+  /**
+   * RenderTitle
+   * @description Focuses on the 1 row layer, being the Title that has been chosen for the page
+   * @returns
+   */
   const RenderTitle = () => {
     if (props.title !== '') {
       return <div className={styles.title}>{props.title}</div>;
@@ -112,7 +189,7 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
   };
 
   return (
-    <div className={`${styles.advancedPageProperties} ${styles.container}`}>
+    <div className={`${styles.advancedPageProperties} ${styles.container}`} style={{backgroundColor: semanticColors.bodyBackground, color: semanticColors.bodyText}}>
       {RenderTitle()}
       {RenderPageProperties()}
     </div>

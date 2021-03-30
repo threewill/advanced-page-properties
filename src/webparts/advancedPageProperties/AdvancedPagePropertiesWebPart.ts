@@ -15,6 +15,11 @@ import "@pnp/sp/fields/list";
 import { FieldTypes, sp } from "@pnp/sp/presets/all";
 import { Log } from './utilities/Log';
 import * as _ from 'lodash';
+import {
+  ThemeProvider,
+  ThemeChangedEventArgs,
+  IReadonlyTheme
+} from '@microsoft/sp-component-base';
 
 export interface IAdvancedPagePropertiesWebPartProps {
   title: string;
@@ -24,9 +29,27 @@ export interface IAdvancedPagePropertiesWebPartProps {
 export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart<IAdvancedPagePropertiesWebPartProps> {
 
   private availableProperties: IPropertyPaneDropdownOption[] = [];
+  private _themeProvider: ThemeProvider;
+  private _themeVariant: IReadonlyTheme | undefined;
+
+  private _handleThemeChangedEvent(args: ThemeChangedEventArgs): void {
+    this._themeVariant = args.theme;
+    this.render();
+  }
 
   protected async onInit(): Promise<void> {
     sp.setup({ spfxContext: this.context });
+
+      // Consume the new ThemeProvider service
+    this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
+
+    // If it exists, get the theme variant
+    this._themeVariant = this._themeProvider.tryGetTheme();
+
+    // Register a handler to be notified if the theme variant changes
+    this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
+
+    super.onInit();
   }
 
   public render(): void {
@@ -35,7 +58,8 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
       {
         context: this.context,
         title: this.properties.title,
-        selectedProperties: this.properties.selectedProperties
+        selectedProperties: this.properties.selectedProperties,
+        themeVariant: this._themeVariant
       }
     );
 
@@ -50,8 +74,10 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     this.availableProperties = [];
     Log.Write(`${fi.length.toString()} fields retrieved!`);
     fi.forEach((f) => {
-      if (!f.FromBaseType && !f.Hidden && !f.Sealed && f.SchemaXml.indexOf("ShowInListSettings=\"FALSE\"") === -1) {
+      if (!f.FromBaseType && !f.Hidden && !f.Sealed && f.SchemaXml.indexOf("ShowInListSettings=\"FALSE\"") === -1
+          && f.TypeAsString !== "Boolean" && f.TypeAsString !== "Note" && f.TypeAsString !== "User") {
         this.availableProperties.push({ key: f.InternalName, text: f.Title });
+        Log.Write(f.TypeAsString);
       }
     });
   }

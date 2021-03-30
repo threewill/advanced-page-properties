@@ -10,23 +10,44 @@
     justify-content: flex-start;
   }
 
-  .row {
-    @include ms-Grid-row;
-    //@include ms-fontColor-white;
-    //background-color: $ms-color-themeDark;
-    //padding: 20px;
+  .propNameRow {
+    margin: 5px;
+    font-size: 15px;
+    font-weight: 500;
   }
 
-  .column {
-    @include ms-Grid-col;
-    @include ms-lg10;
-    @include ms-xl8;
-    @include ms-xlPush2;
-    @include ms-lgPush1;
+  .propValsRow {
+    margin-left: 10px;
+    display: flex;
+    font-size: 12px;
   }
 
   .title {
     font-size: 20px;
     font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .standardCapsule {
+    box-sizing: border-box;
+    padding: 4px 8px 5px 8px;
+    display: flex;
+    border-radius: 16px;
+    height: 24px;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 4px 4px 4px 4px;
+    //background-color: rgba(95, 210, 85, 0.5);
+    width: max-content;
+  }
+
+  .urlValue {
+    margin: 4px 4px 4px 4px;
+    cursor: pointer;
+  }
+
+  .imgValue {
+    width: 50px;
   }
 }
