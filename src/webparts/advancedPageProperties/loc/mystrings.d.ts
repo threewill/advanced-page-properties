@@ -2,6 +2,7 @@ declare interface IAdvancedPagePropertiesWebPartStrings {
   PropertyPaneDescription: string;
   SelectionGroupName: string;
   TitleFieldLabel: string;
+  CapsuleLinkUrlLabel:string;
   SelectedPropertiesFieldLabel: string;
   PropPaneAddButtonText: string;
   PropPaneDeleteButtonText: string;

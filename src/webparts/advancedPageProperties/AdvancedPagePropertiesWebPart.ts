@@ -22,6 +22,7 @@ import {
 } from '@microsoft/sp-component-base';
 
 export interface IAdvancedPagePropertiesWebPartProps {
+  capsuleLinkUrl: string;
   title: string;
   selectedProperties: string[];
 }
@@ -53,13 +54,16 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
   }
 
   public render(): void {
+    // Validate and assign the default value to capsuleLinkUrl if not provided
+    const capsuleLinkUrl = this.properties.capsuleLinkUrl || "/_layouts/15/search.aspx/siteall?q=";
     const element: React.ReactElement<IAdvancedPagePropertiesProps> = React.createElement(
       AdvancedPageProperties,
       {
         context: this.context,
         title: this.properties.title,
         selectedProperties: this.properties.selectedProperties,
-        themeVariant: this._themeVariant
+        themeVariant: this._themeVariant,
+        capsuleLinkUrl:capsuleLinkUrl
       }
     );
 
@@ -121,6 +125,10 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     var propDrops: IPropertyPaneField<any>[] = [];
     propDrops.push(PropertyPaneTextField('title', {
       label: strings.TitleFieldLabel
+    }));
+    //Initialize Capslue Link URL
+    propDrops.push(PropertyPaneTextField('capsuleLinkUrl',{
+      label:strings.CapsuleLinkUrlLabel
     }));
     propDrops.push(PropertyPaneHorizontalRule());
     // Determine how many page property dropdowns we currently have
