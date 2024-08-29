@@ -39,7 +39,7 @@ Solution|Author(s)
 Version|Date|Comments
 -------|----|--------
 1.0|March 30, 2021|Initial release
-1.0.1|Aug 29, 2024|Capsule search links (configurable)
+1.0.2|Aug 29, 2024|Capsule search links (configurable)
 
 ## Disclaimer
 
