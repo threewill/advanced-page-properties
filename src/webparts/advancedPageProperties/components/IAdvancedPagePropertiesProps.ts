@@ -6,4 +6,5 @@ export interface IAdvancedPagePropertiesProps {
   title: string;
   selectedProperties: string[];
   themeVariant: IReadonlyTheme | undefined;
+  capsuleLinkUrl: string;
 }

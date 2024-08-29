@@ -171,11 +171,11 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
           case "TaxonomyFieldTypeMulti":
           case "TaxonomyFieldType":
             return (
-              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}/_layouts/15/search.aspx/siteall?q=${encodeURIComponent(val.Label)}`} style={{ color: semanticColors.accentButtonText }}>{val.Label}</a></span>
+              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}${encodeURIComponent(val.Label)}`} style={{ color: semanticColors.accentButtonText }}>{val.Label}</a></span>
             );
           default:
             return (
-              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}/_layouts/15/search.aspx/siteall?q=${encodeURIComponent(val)}`} style={{ color: semanticColors.accentButtonText }}>{val}</a></span>
+              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}${encodeURIComponent(val)}`} style={{ color: semanticColors.accentButtonText }}>{val}</a></span>
             );
         }
       } else {
