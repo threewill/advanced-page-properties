@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
-  IPropertyPaneConfiguration, IPropertyPaneDropdownOption, IPropertyPaneField, PropertyPaneButton, PropertyPaneButtonType, PropertyPaneDropdown, PropertyPaneHorizontalRule, PropertyPaneTextField
+  IPropertyPaneConfiguration, IPropertyPaneDropdownOption, IPropertyPaneField, PropertyPaneButton, PropertyPaneButtonType, PropertyPaneDropdown, PropertyPaneHorizontalRule, PropertyPaneTextField,
+  PropertyPaneToggle
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
@@ -25,6 +26,8 @@ export interface IAdvancedPagePropertiesWebPartProps {
   capsuleLinkUrl: string;
   title: string;
   selectedProperties: string[];
+  useFieldNameForCapsuleLinkQSFieldName: boolean;
+  capsuleLinkQSFieldNameVal: string;
 }
 
 export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart<IAdvancedPagePropertiesWebPartProps> {
@@ -55,7 +58,7 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
 
   public render(): void {
     // Validate and assign the default value to capsuleLinkUrl if not provided
-    const capsuleLinkUrl = this.properties.capsuleLinkUrl || "/_layouts/15/search.aspx/siteall?q=";
+    const capsuleLinkUrl = this.properties.capsuleLinkUrl || "/_layouts/15/search.aspx/siteall"; //?q=";
     const element: React.ReactElement<IAdvancedPagePropertiesProps> = React.createElement(
       AdvancedPageProperties,
       {
@@ -63,7 +66,9 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
         title: this.properties.title,
         selectedProperties: this.properties.selectedProperties,
         themeVariant: this._themeVariant,
-        capsuleLinkUrl:capsuleLinkUrl
+        capsuleLinkUrl: capsuleLinkUrl,
+        useFieldNameForCapsuleLinkQSName: this.properties.useFieldNameForCapsuleLinkQSFieldName,
+        capsuleLinkQSFieldName: this.properties.capsuleLinkQSFieldNameVal
       }
     );
 
@@ -126,9 +131,21 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     propDrops.push(PropertyPaneTextField('title', {
       label: strings.TitleFieldLabel
     }));
-    //Initialize Capslue Link URL
+    //Initialize Capsule Link URL
     propDrops.push(PropertyPaneTextField('capsuleLinkUrl',{
-      label:strings.CapsuleLinkUrlLabel
+      label:strings.CapsuleLinkUrlLabel,
+      value: this.properties.capsuleLinkUrl || "/_layouts/15/search.aspx/siteall"
+    }));
+    //Check if the Capsule Link will use the field name as the query string name for links
+    propDrops.push(PropertyPaneToggle('useFieldNameForCapsuleLinkQSFieldName', {
+      label: strings.CapsuleLinkUseFieldNameForQSLabel,
+      onText: strings.CapsuleLinkUseFieldNameForQSOnLabel,
+      offText: strings.CapsuleLinkUseFieldNameForQSOffLabel
+    }));
+    //Determine the value if the above answer is no
+    propDrops.push(PropertyPaneTextField('capsuleLinkQSFieldNameVal', {
+      label: strings.CapsuleLinkQSValLabel,
+      value: this.properties.capsuleLinkQSFieldNameVal || "q"
     }));
     propDrops.push(PropertyPaneHorizontalRule());
     // Determine how many page property dropdowns we currently have

@@ -3,6 +3,10 @@ declare interface IAdvancedPagePropertiesWebPartStrings {
   SelectionGroupName: string;
   TitleFieldLabel: string;
   CapsuleLinkUrlLabel:string;
+  CapsuleLinkQSValLabel: string;
+  CapsuleLinkUseFieldNameForQSLabel: string;
+  CapsuleLinkUseFieldNameForQSOnLabel: string;
+  CapsuleLinkUseFieldNameForQSOffLabel: string;
   SelectedPropertiesFieldLabel: string;
   PropPaneAddButtonText: string;
   PropPaneDeleteButtonText: string;

@@ -13,9 +13,10 @@ Attempts to replicate the functionality of Page Properties with the following im
 
 ![see the difference](diff-screencap.png)
 
-## Used SharePoint Framework Version
+## [Used SharePoint Framework Version](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/compatibility)
 
-![version](https://img.shields.io/badge/version-1.11-green.svg)
+![spfx](https://img.shields.io/badge/spfx-1.11-green.svg)
+![node](https://img.shields.io/badge/node-1.10-green.svg)
 
 ## Applies to
 
@@ -40,6 +41,7 @@ Version|Date|Comments
 -------|----|--------
 1.0|March 30, 2021|Initial release
 1.0.2|Aug 29, 2024|Capsule search links (configurable)
+1.0.2.4|Sep 14, 2024|Confgurable query string field for capsule link
 
 ## Disclaimer
 

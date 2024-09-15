@@ -7,4 +7,6 @@ export interface IAdvancedPagePropertiesProps {
   selectedProperties: string[];
   themeVariant: IReadonlyTheme | undefined;
   capsuleLinkUrl: string;
+  useFieldNameForCapsuleLinkQSName: boolean;
+  capsuleLinkQSFieldName: string;
 }
