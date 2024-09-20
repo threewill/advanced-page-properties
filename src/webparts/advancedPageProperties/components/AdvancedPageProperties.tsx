@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { PageProperty } from '../models';
 
 import { sp } from "@pnp/sp";
+import { taxonomy } from "@pnp/sp-taxonomy";
 import { DateTimeFieldFormatType, DateTimeFieldFriendlyFormatType, FieldTypes, IField, IFieldInfo } from "@pnp/sp/fields/types";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
@@ -66,7 +67,33 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
             case "Thumbnail":
               values.push(JSON.parse(allValues[prop]));
               break;
+            case "TaxonomyFieldType":
+              // Special behavior JUST for TaxonomyFieldType, as the API appears to be bugged when returning the label for a single select term set
+              // When we have this specific type, we need to update the existing label with a separate call to the API for the tern label for the GUID
+              // In all other ways it should behave the same as the default behavior
+              try {
+                const termStore = await taxonomy.termStores.get();
+                let newProp = {
+                  Label: allValues[prop].Label,
+                  TermGuid: allValues[prop].TermGuid,
+                  WssId: allValues[prop].WssId
+                }
+                for (let i = 0; i < termStore.length; i++) {
+                  const store = termStore[i];
+                  const term = await store.getTermById(newProp.TermGuid).get();
+                  if (term !== null && term !== undefined) {
+                    console.log(`SPECIAL: Single select term found. (${term.Name})`);
+                    i = termStore.length;
+                    newProp.Label = term.Name;
+                  }
+                }
 
+                values.push(newProp);
+              } catch (error) {
+                  console.error("Error: ", error);
+                  values.push(allValues[prop]);
+              }
+              break;
             default:
               // Default behavior is to treat it like a string
               values.push(allValues[prop]);

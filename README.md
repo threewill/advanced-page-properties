@@ -42,6 +42,7 @@ Version|Date|Comments
 1.0|March 30, 2021|Initial release
 1.0.2|Aug 29, 2024|Capsule search links (configurable)
 1.0.2.4|Sep 14, 2024|Confgurable query string field for capsule link
+1.0.3|Sep 20, 2024|Added support for single-select taxonomy fields
 
 ## Disclaimer
 
