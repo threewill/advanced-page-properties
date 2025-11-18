@@ -174,13 +174,33 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
             }
           case "TaxonomyFieldTypeMulti":
           case "TaxonomyFieldType":
-            return (
-              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val.Label)}`} style={{ color: semanticColors.accentButtonText }}>{val.Label}</a></span>
-            );
+            // SUPER SPECIAL CFPB check:
+            // When the internal field name equals 3 specific names: OwningTeam, Topic, and PageType
+            // Use a very specific destination url using the internal field name as part of the page name
+            // /SitePages/SearchBy" + $internalFieldName + ".aspx?q=" + $termValue
+            if (prop.info.InternalName === "OwningTeam" || prop.info.InternalName === "Topic" || prop.info.InternalName === "PageType") {
+              return (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}/SitePages/SearchBy${prop.info.InternalName}.aspx?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val.Label)}`} style={{ color: semanticColors.accentButtonText }}>{val.Label}</a></span>
+              );
+            } else {
+              return (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val.Label)}`} style={{ color: semanticColors.accentButtonText }}>{val.Label}</a></span>
+              );
+            }
           default:
-            return (
-              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val)}`} style={{ color: semanticColors.accentButtonText }}>{val}</a></span>
-            );
+            // SUPER SPECIAL CFPB check:
+            // When the internal field name equals 3 specific names: OwningTeam, Topic, and PageType
+            // Use a very specific destination url using the internal field name as part of the page name
+            // /SitePages/SearchBy" + $internalFieldName + ".aspx?q=" + $termValue
+            if (prop.info.InternalName === "OwningTeam" || prop.info.InternalName === "Topic" || prop.info.InternalName === "PageType") {
+              return (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}/SitePages/SearchBy${prop.info.InternalName}.aspx?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val)}`} style={{ color: semanticColors.accentButtonText }}>{val}</a></span>
+              );
+            } else {
+              return (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val)}`} style={{ color: semanticColors.accentButtonText }}>{val}</a></span>
+              );
+            }
         }
       } else {
         return (<span className={styles.plainValue}>N/A</span>);
