@@ -77,13 +77,13 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
                   Label: allValues[prop].Label,
                   TermGuid: allValues[prop].TermGuid,
                   WssId: allValues[prop].WssId
-                }
-                for (let i = 0; i < termStore.length; i++) {
-                  const store = termStore[i];
+                };
+                for (let j = 0; j < termStore.length; j++) {
+                  const store = termStore[j];
                   const term = await store.getTermById(newProp.TermGuid).get();
                   if (term !== null && term !== undefined) {
                     console.log(`SPECIAL: Single select term found. (${term.Name})`);
-                    i = termStore.length;
+                    j = termStore.length;
                     newProp.Label = term.Name;
                   }
                 }
@@ -119,29 +119,6 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
       // No cleanup at this moment
     };
   }, [propsRef.current]);
-
-  /**
-   * RenderPageProperties
-   * @description Focuses on the 2nd row layer, which is the property names that have been chosen to be displayed (uses Title as the display name)
-   * @returns
-   */
-  const RenderPageProperties = () => {
-    if (pagePropValues !== undefined && pagePropValues !== null) {
-      var retVal = _.map(pagePropValues, (prop) => {
-        return (
-            <>
-              <div className={styles.propNameRow}>{prop.info.Title}<span style={{display: 'none'}}> - {prop.info.TypeAsString}</span></div>
-              <div className={styles.propValsRow}>
-                {RenderPagePropValue(prop)}
-              </div>
-            </>
-          );
-      });
-      return retVal;
-    } else {
-      return <i>Nothing to display</i>;
-    }
-  };
 
   /**
    * RenderPagePropValue
@@ -211,6 +188,29 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
     });
     return retVal;
   };
+
+    /**
+   * RenderPageProperties
+   * @description Focuses on the 2nd row layer, which is the property names that have been chosen to be displayed (uses Title as the display name)
+   * @returns
+   */
+    const RenderPageProperties = () => {
+      if (pagePropValues !== undefined && pagePropValues !== null) {
+        var retVal = _.map(pagePropValues, (prop) => {
+          return (
+              <>
+                <div className={styles.propNameRow}>{prop.info.Title}<span style={{display: 'none'}}> - {prop.info.TypeAsString}</span></div>
+                <div className={styles.propValsRow}>
+                  {RenderPagePropValue(prop)}
+                </div>
+              </>
+            );
+        });
+        return retVal;
+      } else {
+        return <i>Nothing to display</i>;
+      }
+    };
 
   /**
    * RenderTitle
