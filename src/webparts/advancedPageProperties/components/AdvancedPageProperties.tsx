@@ -4,7 +4,7 @@ import { IAdvancedPagePropertiesProps } from './IAdvancedPagePropertiesProps';
 import { Log } from '../utilities/Log';
 import * as _ from 'lodash';
 import { useState, useEffect, useRef } from 'react';
-import { PageProperty } from '../models';
+import { PageProperty, PropertyConfiguration, DisplayMode, TextStyle } from '../models';
 
 import { sp } from "@pnp/sp";
 import { taxonomy } from "@pnp/sp-taxonomy";
@@ -20,9 +20,14 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
  * @param props Page Properties selected for display
  * @returns
  */
+// Extended PageProperty that includes configuration
+interface PagePropertyWithConfig extends PageProperty {
+  config: PropertyConfiguration;
+}
+
 const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesProps> = props => {
-  // Main state object for the life of this component - pagePropValues
-  const [pagePropValues, setPagePropValues] = useState<PageProperty[]>([]);
+  // Main state object for the life of this component - pagePropValues with config
+  const [pagePropValues, setPagePropValues] = useState<PagePropertyWithConfig[]>([]);
   const propsRef = useRef(props);
 
   const { semanticColors }: IReadonlyTheme = props.themeVariant;
@@ -36,20 +41,24 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
    * @description Gets the actual values for any selected properties, along with critical field metadata and ultimately re-sets the pagePropValues state
    */
   async function refreshProperties () {
-    var newSetOfValues: PageProperty[] = [];
+    var newSetOfValues: PagePropertyWithConfig[] = [];
 
-    if (props.selectedProperties !== undefined && props.selectedProperties !== null) {
-      Log.Write(`${props.selectedProperties.length.toString()} properties used.`);
+    if (props.propertyConfigurations !== undefined && props.propertyConfigurations !== null && props.propertyConfigurations.length > 0) {
+      Log.Write(`${props.propertyConfigurations.length.toString()} properties used.`);
+
+      // Get all field names for the select query
+      const fieldNames = props.propertyConfigurations.map(config => config.fieldName);
 
       // Get the value(s) for the field from the list item itself
       var allValues: any = {};
       if (props.context.pageContext.listItem !== undefined && props.context.pageContext.listItem !== null) {
-        allValues = await sp.web.lists.getByTitle("Site Pages").items.getById(props.context.pageContext.listItem.id).select(...props.selectedProperties).get();
+        allValues = await sp.web.lists.getByTitle("Site Pages").items.getById(props.context.pageContext.listItem.id).select(...fieldNames).get();
         console.log(allValues);
       }
 
-      for (let i = 0; i < props.selectedProperties.length; i++) {
-        const prop = props.selectedProperties[i];
+      for (let i = 0; i < props.propertyConfigurations.length; i++) {
+        const config = props.propertyConfigurations[i];
+        const prop = config.fieldName;
 
         Log.Write(`Selected Property: ${prop}`);
 
@@ -77,13 +86,13 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
                   Label: allValues[prop].Label,
                   TermGuid: allValues[prop].TermGuid,
                   WssId: allValues[prop].WssId
-                }
-                for (let i = 0; i < termStore.length; i++) {
-                  const store = termStore[i];
+                };
+                for (let storeIndex = 0; storeIndex < termStore.length; storeIndex++) {
+                  const store = termStore[storeIndex];
                   const term = await store.getTermById(newProp.TermGuid).get();
                   if (term !== null && term !== undefined) {
                     console.log(`SPECIAL: Single select term found. (${term.Name})`);
-                    i = termStore.length;
+                    storeIndex = termStore.length;
                     newProp.Label = term.Name;
                   }
                 }
@@ -101,11 +110,11 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
           }
         }
 
-        // Push the final setup of a PageProperty object
-        newSetOfValues.push({ info: field, values: [...values] });
+        // Push the final setup of a PageProperty object with its configuration
+        newSetOfValues.push({ info: field, values: [...values], config: config });
       }
 
-      setPagePropValues({...newSetOfValues});
+      setPagePropValues([...newSetOfValues]);
     }
   }
 
@@ -121,16 +130,175 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
   }, [propsRef.current]);
 
   /**
+   * GetTextStyleClass
+   * @description Returns the appropriate CSS class for the text style
+   * @param textStyle
+   * @returns
+   */
+  const GetTextStyleClass = (textStyle: TextStyle): string => {
+    switch (textStyle) {
+      case TextStyle.H2:
+        return styles.textH2;
+      case TextStyle.H3:
+        return styles.textH3;
+      case TextStyle.H4:
+        return styles.textH4;
+      case TextStyle.Body:
+      default:
+        return styles.textBody;
+    }
+  };
+
+  /**
+   * RenderPagePropValue
+   * @description Focuses on the 3rd and final row layer, which is the actual values tied to any property displayed for the page
+   * @param prop
+   * @returns
+   */
+  const RenderPagePropValue = (prop: PagePropertyWithConfig) => {
+    console.log(prop);
+    const isCapsule = prop.config.displayMode === DisplayMode.Capsule;
+    const textStyleClass = GetTextStyleClass(prop.config.textStyle);
+
+    var retVal = _.map(prop.values, (val, index) => {
+      if (val !== null) {
+        // Render based on field type
+        let content: JSX.Element;
+
+        switch (prop.info.TypeAsString) {
+          case "URL":
+            if (isCapsule) {
+              content = (
+                <span className={styles.urlValue}><a href={val.Url} target="_blank" style={{color: semanticColors.link}}>{val.Description}</a></span>
+              );
+            } else {
+              content = (
+                <span className={textStyleClass}>{val.Description}</span>
+              );
+            }
+            break;
+          case "Thumbnail":
+            content = (
+              <span><img className={styles.imgValue} src={val.serverRelativeUrl} /></span>
+            );
+            break;
+          case "Number":
+            const numberValue = (prop.info["ShowAsPercentage"] === true ? Number(val).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}) : (prop.info["CommaSeparator"] === true ? val.toLocaleString('en') : val.toString()));
+            if (isCapsule) {
+              content = (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}>
+                  <a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(numberValue)}`} style={{ color: semanticColors.accentButtonText }}>{numberValue}</a>
+                </span>
+              );
+            } else {
+              content = (
+                <span className={textStyleClass}>{numberValue}</span>
+              );
+            }
+            break;
+          case "Currency":
+            const currencyValue = (prop.info["CommaSeparator"] === true ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val) : Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', useGrouping: false }).format(val));
+            if (isCapsule) {
+              content = (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}>
+                  <a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(currencyValue)}`} style={{ color: semanticColors.accentButtonText }}>{currencyValue}</a>
+                </span>
+              );
+            } else {
+              content = (
+                <span className={textStyleClass}>{currencyValue}</span>
+              );
+            }
+            break;
+          case "DateTime":
+            let dateValue: string;
+            switch (prop.info["DateFormat"]) {
+              case "StandardUS":
+                dateValue = new Date(val).toLocaleDateString();
+                break;
+              case "ISO8601":
+                const d = new Date(val);
+                dateValue = `${d.getFullYear().toString()}-${d.getMonth()}-${d.getDate()}`;
+                break;
+              case "DayOfWeek":
+                dateValue = new Date(val).toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                break;
+              case "MonthSpelled":
+                dateValue = new Date(val).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' });
+                break;
+              default:
+                dateValue = new Date(val).toLocaleDateString();
+                break;
+            }
+            if (isCapsule) {
+              content = (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}>
+                  <a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(dateValue)}`} style={{ color: semanticColors.accentButtonText }}>{dateValue}</a>
+                </span>
+              );
+            } else {
+              content = (
+                <span className={textStyleClass}>{dateValue}</span>
+              );
+            }
+            break;
+          case "TaxonomyFieldTypeMulti":
+          case "TaxonomyFieldType":
+            const termLabel = val.Label || val;
+            if (isCapsule) {
+              content = (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}>
+                  <a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(termLabel)}`} style={{ color: semanticColors.accentButtonText }}>{termLabel}</a>
+                </span>
+              );
+            } else {
+              content = (
+                <span className={textStyleClass}>{termLabel}</span>
+              );
+            }
+            break;
+          default:
+            const stringValue = val.toString();
+            if (isCapsule) {
+              content = (
+                <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}>
+                  <a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(stringValue)}`} style={{ color: semanticColors.accentButtonText }}>{stringValue}</a>
+                </span>
+              );
+            } else {
+              content = (
+                <span className={textStyleClass}>{stringValue}</span>
+              );
+            }
+            break;
+        }
+
+        return <React.Fragment key={index}>{content}</React.Fragment>;
+      } else {
+        return (
+          <React.Fragment key={index}>
+            <span className={isCapsule ? styles.standardCapsule : textStyleClass} style={isCapsule ? {backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText} : {}}>N/A</span>
+          </React.Fragment>
+        );
+      }
+    });
+    return retVal;
+  };
+
+  /**
    * RenderPageProperties
    * @description Focuses on the 2nd row layer, which is the property names that have been chosen to be displayed (uses Title as the display name)
    * @returns
    */
   const RenderPageProperties = () => {
-    if (pagePropValues !== undefined && pagePropValues !== null) {
+    if (pagePropValues !== undefined && pagePropValues !== null && pagePropValues.length > 0) {
       var retVal = _.map(pagePropValues, (prop) => {
+        const showLabel = !prop.config.hideLabel;
         return (
             <>
-              <div className={styles.propNameRow}>{prop.info.Title}<span style={{display: 'none'}}> - {prop.info.TypeAsString}</span></div>
+              {showLabel && (
+                <div className={styles.propNameRow}>{prop.info.Title}<span style={{display: 'none'}}> - {prop.info.TypeAsString}</span></div>
+              )}
               <div className={styles.propValsRow}>
                 {RenderPagePropValue(prop)}
               </div>
@@ -141,75 +309,6 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
     } else {
       return <i>Nothing to display</i>;
     }
-  };
-
-  /**
-   * RenderPagePropValue
-   * @description Focuses on the 3rd and final row layer, which is the actual values tied to any property displayed for the page
-   * @param prop
-   * @returns
-   */
-  const RenderPagePropValue = (prop: PageProperty) => {
-    console.log(prop);
-    var retVal = _.map(prop.values, (val) => {
-      if (val !== null) {
-        switch (prop.info.TypeAsString) {
-          case "URL":
-            return (
-              <span className={styles.urlValue}><a href={val.Url} target="_blank" style={{color: semanticColors.link}}>{val.Description}</a></span>
-            );
-          case "Thumbnail":
-            return (
-              <span><img className={styles.imgValue} src={val.serverRelativeUrl} /></span>
-            );
-          case "Number":
-            return (
-              <span className={styles.plainValue}>{(prop.info["ShowAsPercentage"] === true ? Number(val).toLocaleString(undefined,{style: 'percent', minimumFractionDigits:0}) : (prop.info["CommaSeparator"] === true ? val.toLocaleString('en') : val.toString()))}</span>
-            );
-          case "Currency":
-            return (
-              <span className={styles.plainValue}>{(prop.info["CommaSeparator"] === true ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val) : Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', useGrouping: false }).format(val))}</span>
-            );
-          case "DateTime":
-            //,"",,
-            switch (prop.info["DateFormat"]) {
-              case "StandardUS":
-                return (
-                  <span className={styles.plainValue}>{new Date(val).toLocaleDateString()}</span>
-                );
-              case "ISO8601":
-                const d = new Date(val);
-                return (
-                  <span className={styles.plainValue}>{`${d.getFullYear().toString()}-${d.getMonth()}-${d.getDate()}`}</span>
-                );
-              case "DayOfWeek":
-                return (
-                  <span className={styles.plainValue}>{new Date(val).toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                );
-              case "MonthSpelled":
-                return (
-                  <span className={styles.plainValue}>{new Date(val).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                );
-              default:
-                return (
-                  <span className={styles.plainValue}>{new Date(val).toLocaleDateString()}</span>
-                );
-            }
-          case "TaxonomyFieldTypeMulti":
-          case "TaxonomyFieldType":
-            return (
-              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val.Label)}`} style={{ color: semanticColors.accentButtonText }}>{val.Label}</a></span>
-            );
-          default:
-            return (
-              <span className={styles.standardCapsule} style={{backgroundColor: semanticColors.accentButtonBackground, color: semanticColors.accentButtonText}}><a href={`${props.context.pageContext.web.absoluteUrl}${props.capsuleLinkUrl}?${(props.useFieldNameForCapsuleLinkQSName ? prop.info.InternalName : (props.capsuleLinkQSFieldName === null || props.capsuleLinkQSFieldName === undefined ? "q" : props.capsuleLinkQSFieldName))}=${encodeURIComponent(val)}`} style={{ color: semanticColors.accentButtonText }}>{val}</a></span>
-            );
-        }
-      } else {
-        return (<span className={styles.plainValue}>N/A</span>);
-      }
-    });
-    return retVal;
   };
 
   /**

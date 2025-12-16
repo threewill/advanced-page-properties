@@ -11,6 +11,15 @@ define([], function() {
     "SelectedPropertiesFieldLabel": "Property",
     "PropPaneAddButtonText": "Add",
     "PropPaneDeleteButtonText": "Delete",
-    "LogAppName": "APP"
+    "LogAppName": "APP",
+    "DisplayModeLabel": "Display Mode",
+    "DisplayModeCapsuleLabel": "Capsule",
+    "DisplayModeTextLabel": "Text",
+    "TextStyleLabel": "Text Style",
+    "TextStyleH2Label": "Heading 2",
+    "TextStyleH3Label": "Heading 3",
+    "TextStyleH4Label": "Heading 4",
+    "TextStyleBodyLabel": "Body Text",
+    "HideLabelLabel": "Hide Property Label"
   }
 });

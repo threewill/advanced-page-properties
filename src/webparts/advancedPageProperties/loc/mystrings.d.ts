@@ -11,6 +11,15 @@ declare interface IAdvancedPagePropertiesWebPartStrings {
   PropPaneAddButtonText: string;
   PropPaneDeleteButtonText: string;
   LogAppName: string;
+  DisplayModeLabel: string;
+  DisplayModeCapsuleLabel: string;
+  DisplayModeTextLabel: string;
+  TextStyleLabel: string;
+  TextStyleH2Label: string;
+  TextStyleH3Label: string;
+  TextStyleH4Label: string;
+  TextStyleBodyLabel: string;
+  HideLabelLabel: string;
 }
 
 declare module 'AdvancedPagePropertiesWebPartStrings' {

@@ -21,11 +21,13 @@ import {
   ThemeChangedEventArgs,
   IReadonlyTheme
 } from '@microsoft/sp-component-base';
+import { PropertyConfiguration, DisplayMode, TextStyle } from './models';
 
 export interface IAdvancedPagePropertiesWebPartProps {
   capsuleLinkUrl: string;
   title: string;
-  selectedProperties: string[];
+  selectedProperties: string[]; // Legacy - kept for backward compatibility
+  propertyConfigurations: PropertyConfiguration[]; // New structure
   useFieldNameForCapsuleLinkQSFieldName: boolean;
   capsuleLinkQSFieldNameVal: string;
 }
@@ -59,12 +61,30 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
   public render(): void {
     // Validate and assign the default value to capsuleLinkUrl if not provided
     const capsuleLinkUrl = this.properties.capsuleLinkUrl || "/_layouts/15/search.aspx/siteall"; //?q=";
+
+    // Migrate legacy selectedProperties to new propertyConfigurations if needed
+    let propertyConfigurations = this.properties.propertyConfigurations;
+    if (!propertyConfigurations || propertyConfigurations.length === 0) {
+      if (this.properties.selectedProperties && this.properties.selectedProperties.length > 0) {
+        // Migrate legacy data
+        propertyConfigurations = this.properties.selectedProperties.map(fieldName => ({
+          fieldName: fieldName,
+          displayMode: DisplayMode.Capsule,
+          textStyle: TextStyle.Body,
+          hideLabel: false
+        }));
+        this.properties.propertyConfigurations = propertyConfigurations;
+      } else {
+        propertyConfigurations = [];
+      }
+    }
+
     const element: React.ReactElement<IAdvancedPagePropertiesProps> = React.createElement(
       AdvancedPageProperties,
       {
         context: this.context,
         title: this.properties.title,
-        selectedProperties: this.properties.selectedProperties,
+        propertyConfigurations: propertyConfigurations,
         themeVariant: this._themeVariant,
         capsuleLinkUrl: capsuleLinkUrl,
         useFieldNameForCapsuleLinkQSName: this.properties.useFieldNameForCapsuleLinkQSFieldName,
@@ -100,20 +120,55 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
   }
 
   protected onAddButtonClick (value: any) {
-    this.properties.selectedProperties.push(this.availableProperties[0].key.toString());
+    if (!this.properties.propertyConfigurations) {
+      this.properties.propertyConfigurations = [];
+    }
+    this.properties.propertyConfigurations.push({
+      fieldName: this.availableProperties[0].key.toString(),
+      displayMode: DisplayMode.Capsule,
+      textStyle: TextStyle.Body,
+      hideLabel: false
+    });
+    this.context.propertyPane.refresh();
   }
 
   protected onDeleteButtonClick (value: any) {
     Log.Write(value.toString());
-    var removed = this.properties.selectedProperties.splice(value, 1);
-    Log.Write(`${removed[0]} removed.`);
+    if (this.properties.propertyConfigurations && this.properties.propertyConfigurations.length > value) {
+      var removed = this.properties.propertyConfigurations.splice(value, 1);
+      Log.Write(`${removed[0].fieldName} removed.`);
+      this.context.propertyPane.refresh();
+    }
   }
 
   protected onPropertyPaneFieldChanged(propertyPath: string, oldValue: any, newValue: any): void {
+    if (!this.properties.propertyConfigurations) {
+      this.properties.propertyConfigurations = [];
+    }
+
     if (propertyPath.indexOf("selectedProperty") >= 0) {
       Log.Write('Selected Property identified');
       let index: number = _.toInteger(propertyPath.replace("selectedProperty", ""));
-      this.properties.selectedProperties[index] = newValue;
+      if (this.properties.propertyConfigurations[index]) {
+        this.properties.propertyConfigurations[index].fieldName = newValue;
+      }
+    } else if (propertyPath.indexOf("displayMode") >= 0) {
+      let index: number = _.toInteger(propertyPath.replace("displayMode", ""));
+      if (this.properties.propertyConfigurations[index]) {
+        this.properties.propertyConfigurations[index].displayMode = newValue;
+        // Refresh property pane to show/hide text style dropdown
+        this.context.propertyPane.refresh();
+      }
+    } else if (propertyPath.indexOf("textStyle") >= 0) {
+      let index: number = _.toInteger(propertyPath.replace("textStyle", ""));
+      if (this.properties.propertyConfigurations[index]) {
+        this.properties.propertyConfigurations[index].textStyle = newValue;
+      }
+    } else if (propertyPath.indexOf("hideLabel") >= 0) {
+      let index: number = _.toInteger(propertyPath.replace("hideLabel", ""));
+      if (this.properties.propertyConfigurations[index]) {
+        this.properties.propertyConfigurations[index].hideLabel = newValue;
+      }
     }
   }
 
@@ -148,15 +203,51 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
       value: this.properties.capsuleLinkQSFieldNameVal || "q"
     }));
     propDrops.push(PropertyPaneHorizontalRule());
-    // Determine how many page property dropdowns we currently have
-    this.properties.selectedProperties.forEach((prop, index) => {
+    // Determine how many page property configurations we currently have
+    const configs = this.properties.propertyConfigurations || [];
+    configs.forEach((config, index) => {
+      // Property field selection
       propDrops.push(PropertyPaneDropdown(`selectedProperty${index.toString()}`,
         {
           label: strings.SelectedPropertiesFieldLabel,
           options: this.availableProperties,
-          selectedKey: prop,
+          selectedKey: config.fieldName,
         }));
-      // Every drop down gets its own delete button
+
+      // Display mode selection
+      propDrops.push(PropertyPaneDropdown(`displayMode${index.toString()}`,
+        {
+          label: strings.DisplayModeLabel,
+          options: [
+            { key: DisplayMode.Capsule, text: strings.DisplayModeCapsuleLabel },
+            { key: DisplayMode.Text, text: strings.DisplayModeTextLabel }
+          ],
+          selectedKey: config.displayMode,
+        }));
+
+      // Text style selection (only show when display mode is Text)
+      if (config.displayMode === DisplayMode.Text) {
+        propDrops.push(PropertyPaneDropdown(`textStyle${index.toString()}`,
+          {
+            label: strings.TextStyleLabel,
+            options: [
+              { key: TextStyle.H2, text: strings.TextStyleH2Label },
+              { key: TextStyle.H3, text: strings.TextStyleH3Label },
+              { key: TextStyle.H4, text: strings.TextStyleH4Label },
+              { key: TextStyle.Body, text: strings.TextStyleBodyLabel }
+            ],
+            selectedKey: config.textStyle,
+          }));
+      }
+
+      // Hide label toggle
+      propDrops.push(PropertyPaneToggle(`hideLabel${index.toString()}`,
+        {
+          label: strings.HideLabelLabel,
+          checked: config.hideLabel
+        }));
+
+      // Every property gets its own delete button
       propDrops.push(PropertyPaneButton(`deleteButton${index.toString()}`,
       {
         text: strings.PropPaneDeleteButtonText,

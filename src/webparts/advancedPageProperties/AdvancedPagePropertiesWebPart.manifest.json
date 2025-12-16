@@ -15,15 +15,20 @@
   "supportedHosts": ["SharePointWebPart"],
   "supportsThemeVariants": true,
 
-  "preconfiguredEntries": [{
-    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
-    "group": { "default": "Other" },
-    "title": { "default": "Advanced Page Properties" },
-    "description": { "default": "A glow-up for the standard Microsoft Page Properties web part" },
-    "officeFabricIconFontName": "TagSolid",
-    "properties": {
-      "title": "Page Properties",
-      "selectedProperties": []
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
+      "group": { "default": "Other" },
+      "title": { "default": "Advanced Page Properties" },
+      "description": {
+        "default": "A glow-up for the standard Microsoft Page Properties web part"
+      },
+      "officeFabricIconFontName": "TagSolid",
+      "properties": {
+        "title": "Page Properties",
+        "selectedProperties": [],
+        "propertyConfigurations": []
+      }
     }
-  }]
+  ]
 }
