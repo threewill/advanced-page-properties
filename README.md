@@ -111,8 +111,9 @@ The web part supports the following field types with special formatting:
   - Month spelled out format
 - **Multi-Choice Fields** - Displays all selected values as capsules
 - **Text and Choice Fields** - Standard text display as capsules
+- **Note Fields** (Multi-line text) - Displays as formatted text with preserved line breaks (Text mode only, Capsule mode not available)
 
-**Note**: The following field types are excluded from selection: Boolean, Note (multi-line text), and User fields.
+**Note**: The following field types are excluded from selection: Boolean and User fields.
 
 ### Configuration Options
 

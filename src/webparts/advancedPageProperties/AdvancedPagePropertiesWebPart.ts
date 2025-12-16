@@ -35,6 +35,7 @@ export interface IAdvancedPagePropertiesWebPartProps {
 export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart<IAdvancedPagePropertiesWebPartProps> {
 
   private availableProperties: IPropertyPaneDropdownOption[] = [];
+  private fieldTypeMap: Map<string, string> = new Map(); // Maps field internal name to TypeAsString
   private _themeProvider: ThemeProvider;
   private _themeVariant: IReadonlyTheme | undefined;
 
@@ -101,10 +102,15 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     const fi = await list.fields();
 
     this.availableProperties = [];
+    this.fieldTypeMap.clear();
     Log.Write(`${fi.length.toString()} fields retrieved!`);
     fi.forEach((f) => {
+      // Store field type mapping for all fields
+      this.fieldTypeMap.set(f.InternalName, f.TypeAsString);
+
+      // Allow Note fields now, but still exclude Boolean and User
       if (!f.FromBaseType && !f.Hidden && !f.Sealed && f.SchemaXml.indexOf("ShowInListSettings=\"FALSE\"") === -1
-          && f.TypeAsString !== "Boolean" && f.TypeAsString !== "Note" && f.TypeAsString !== "User") {
+          && f.TypeAsString !== "Boolean" && f.TypeAsString !== "User") {
         this.availableProperties.push({ key: f.InternalName, text: f.Title });
         Log.Write(f.TypeAsString);
       }
@@ -123,9 +129,14 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     if (!this.properties.propertyConfigurations) {
       this.properties.propertyConfigurations = [];
     }
+    const selectedFieldName = this.availableProperties[0].key.toString();
+    const fieldType = this.fieldTypeMap.get(selectedFieldName);
+    // Note fields default to Text mode, all others default to Capsule
+    const defaultDisplayMode = fieldType === "Note" ? DisplayMode.Text : DisplayMode.Capsule;
+
     this.properties.propertyConfigurations.push({
-      fieldName: this.availableProperties[0].key.toString(),
-      displayMode: DisplayMode.Capsule,
+      fieldName: selectedFieldName,
+      displayMode: defaultDisplayMode,
       textStyle: TextStyle.Body,
       hideLabel: false
     });
@@ -151,6 +162,13 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
       let index: number = _.toInteger(propertyPath.replace("selectedProperty", ""));
       if (this.properties.propertyConfigurations[index]) {
         this.properties.propertyConfigurations[index].fieldName = newValue;
+        // If the new field is a Note type, automatically set to Text mode
+        const fieldType = this.fieldTypeMap.get(newValue);
+        if (fieldType === "Note") {
+          this.properties.propertyConfigurations[index].displayMode = DisplayMode.Text;
+        }
+        // Refresh property pane to update display mode options
+        this.context.propertyPane.refresh();
       }
     } else if (propertyPath.indexOf("displayMode") >= 0) {
       let index: number = _.toInteger(propertyPath.replace("displayMode", ""));
@@ -215,14 +233,27 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
         }));
 
       // Display mode selection
+      // Note: Note fields can only use Text mode, not Capsule
+      const fieldType = this.fieldTypeMap.get(config.fieldName);
+      const isNoteField = fieldType === "Note";
+      const displayModeOptions = isNoteField
+        ? [{ key: DisplayMode.Text, text: strings.DisplayModeTextLabel }]
+        : [
+            { key: DisplayMode.Capsule, text: strings.DisplayModeCapsuleLabel },
+            { key: DisplayMode.Text, text: strings.DisplayModeTextLabel }
+          ];
+
+      // If it's a Note field and currently set to Capsule, change it to Text
+      if (isNoteField && config.displayMode === DisplayMode.Capsule) {
+        config.displayMode = DisplayMode.Text;
+      }
+
       propDrops.push(PropertyPaneDropdown(`displayMode${index.toString()}`,
         {
           label: strings.DisplayModeLabel,
-          options: [
-            { key: DisplayMode.Capsule, text: strings.DisplayModeCapsuleLabel },
-            { key: DisplayMode.Text, text: strings.DisplayModeTextLabel }
-          ],
+          options: displayModeOptions,
           selectedKey: config.displayMode,
+          disabled: isNoteField, // Disable dropdown for Note fields since only one option
         }));
 
       // Text style selection (only show when display mode is Text)

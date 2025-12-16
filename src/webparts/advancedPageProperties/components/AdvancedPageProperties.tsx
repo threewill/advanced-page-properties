@@ -242,6 +242,14 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
               );
             }
             break;
+          case "Note":
+            // Note fields are multi-line text - preserve line breaks
+            // Note fields should only be in Text mode (enforced in property pane)
+            const noteValue = val.toString();
+            content = (
+              <span className={textStyleClass} style={{whiteSpace: 'pre-wrap'}}>{noteValue}</span>
+            );
+            break;
           case "TaxonomyFieldTypeMulti":
           case "TaxonomyFieldType":
             const termLabel = val.Label || val;
