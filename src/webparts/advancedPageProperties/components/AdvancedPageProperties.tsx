@@ -299,7 +299,7 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
               {showLabel && (
                 <div className={styles.propNameRow}>{prop.info.Title}<span style={{display: 'none'}}> - {prop.info.TypeAsString}</span></div>
               )}
-              <div className={styles.propValsRow}>
+              <div className={`${styles.propValsRow} ${!showLabel ? styles.propValsRowNoLabel : ''}`}>
                 {RenderPagePropValue(prop)}
               </div>
             </>
