@@ -1,0 +1,185 @@
+@import '~office-ui-fabric-react/dist/sass/References.scss';
+
+.urlPageProperties {
+  .container {
+    max-width: 100%;
+    margin: 0px auto;
+  }
+
+  .title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .tilesContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+
+  // Adjust grid based on tile size
+  .tilesExtraSmall {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  }
+
+  .tilesSmall {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  }
+
+  .tilesMedium {
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  }
+
+  .tilesLarge {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .tilesExtraLarge {
+    grid-template-columns: repeat(auto-fill, minmax(192px, 1fr));
+  }
+
+  .tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: 1px solid;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-align: center;
+    padding: 8px;
+    box-sizing: border-box;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:focus {
+      outline: 2px solid;
+      outline-offset: 2px;
+    }
+  }
+
+  .tileIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+  }
+
+  .tileName {
+    font-weight: 400;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  // Extra Small: 64px × 64px
+  .tileExtraSmall {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+
+    .tileIcon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .tileName {
+      font-size: 10px;
+      line-height: 1.1;
+    }
+  }
+
+  // Small: 96px × 96px
+  .tileSmall {
+    width: 96px;
+    height: 96px;
+    min-width: 96px;
+    min-height: 96px;
+
+    .tileIcon {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .tileName {
+      font-size: 12px;
+    }
+  }
+
+  // Medium: 128px × 128px
+  .tileMedium {
+    width: 128px;
+    height: 128px;
+    min-width: 128px;
+    min-height: 128px;
+
+    .tileIcon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .tileName {
+      font-size: 14px;
+    }
+  }
+
+  // Large: 160px × 160px
+  .tileLarge {
+    width: 160px;
+    height: 160px;
+    min-width: 160px;
+    min-height: 160px;
+
+    .tileIcon {
+      font-size: 64px;
+      margin-bottom: 10px;
+    }
+
+    .tileName {
+      font-size: 16px;
+    }
+  }
+
+  // Extra Large: 192px × 192px
+  .tileExtraLarge {
+    width: 192px;
+    height: 192px;
+    min-width: 192px;
+    min-height: 192px;
+
+    .tileIcon {
+      font-size: 80px;
+      margin-bottom: 12px;
+    }
+
+    .tileName {
+      font-size: 18px;
+    }
+  }
+
+  .emptyState {
+    padding: 20px;
+    text-align: center;
+    font-style: italic;
+    color: inherit;
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .tilesContainer {
+      grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+      gap: 12px;
+    }
+  }
+}

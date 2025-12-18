@@ -9,11 +9,20 @@
           "manifest": "./src/webparts/advancedPageProperties/AdvancedPagePropertiesWebPart.manifest.json"
         }
       ]
+    },
+    "url-page-properties-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/urlPageProperties/UrlPagePropertiesWebPart.js",
+          "manifest": "./src/webparts/urlPageProperties/UrlPagePropertiesWebPart.manifest.json"
+        }
+      ]
     }
   },
   "externals": {},
   "localizedResources": {
     "AdvancedPagePropertiesWebPartStrings": "lib/webparts/advancedPageProperties/loc/{locale}.js",
+    "UrlPagePropertiesWebPartStrings": "lib/webparts/urlPageProperties/loc/{locale}.js",
     "PropertyControlStrings": "node_modules/@pnp/spfx-property-controls/lib/loc/{locale}.js"
   }
 }
