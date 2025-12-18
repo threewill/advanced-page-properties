@@ -21,7 +21,41 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 interface UrlPropertyValue {
   url: string;
   description: string;
+  fileName: string;
   config: UrlPropertyConfiguration;
+}
+
+/**
+ * Extract filename from URL
+ * @param url The URL to extract filename from
+ * @returns The filename or empty string
+ */
+function getFileNameFromUrl(url: string): string {
+  if (!url) return '';
+
+  try {
+    // Remove query string and hash
+    const urlWithoutQuery = url.split('?')[0].split('#')[0];
+    // Get the last part of the path
+    const pathParts = urlWithoutQuery.split('/');
+    let fileName = pathParts[pathParts.length - 1];
+
+    // If the last part is empty or just a slash, try the previous part
+    if (!fileName || fileName === '') {
+      fileName = pathParts[pathParts.length - 2] || '';
+    }
+
+    // Decode URL encoding if present
+    try {
+      fileName = decodeURIComponent(fileName);
+    } catch (e) {
+      // If decoding fails, use the original
+    }
+
+    return fileName || '';
+  } catch (error) {
+    return '';
+  }
 }
 
 const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = props => {
@@ -62,9 +96,14 @@ const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = prop
 
         if (allValues.hasOwnProperty(prop) && allValues[prop] !== null) {
           const urlValue = allValues[prop];
+          const url = urlValue.Url || '';
+          const description = urlValue.Description || '';
+          const fileName = getFileNameFromUrl(url);
+
           newSetOfValues.push({
-            url: urlValue.Url || '',
-            description: urlValue.Description || config.displayName || prop,
+            url: url,
+            description: description,
+            fileName: fileName,
             config: config
           });
         }
@@ -138,7 +177,18 @@ const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = prop
       return (
         <div className={`${styles.tilesContainer} ${styles[containerSizeClass]}`}>
           {urlPropertyValues.map((urlProp, index) => {
-            const displayName = urlProp.config.displayName || urlProp.description;
+            // Priority: 1. config.displayName, 2. Description, 3. filename from URL
+            let displayName = '';
+            if (urlProp.config.displayName && urlProp.config.displayName.trim() !== '') {
+              displayName = urlProp.config.displayName;
+            } else if (urlProp.description && urlProp.description.trim() !== '') {
+              displayName = urlProp.description;
+            } else if (urlProp.fileName && urlProp.fileName.trim() !== '') {
+              displayName = urlProp.fileName;
+            } else {
+              displayName = urlProp.config.fieldName; // Fallback to field name if all else fails
+            }
+
             const iconName = urlProp.config.iconName || 'Link';
 
             return (
