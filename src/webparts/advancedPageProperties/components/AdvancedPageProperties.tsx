@@ -4,7 +4,7 @@ import { IAdvancedPagePropertiesProps } from './IAdvancedPagePropertiesProps';
 import { Log } from '../utilities/Log';
 import * as _ from 'lodash';
 import { useState, useEffect, useRef } from 'react';
-import { PageProperty, PropertyConfiguration, DisplayMode, TextStyle } from '../models';
+import { PageProperty, PropertyConfiguration, DisplayMode, TextStyle, BooleanDisplayFormat } from '../models';
 
 import { sp } from "@pnp/sp";
 import { taxonomy } from "@pnp/sp-taxonomy";
@@ -23,6 +23,41 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 // Extended PageProperty that includes configuration
 interface PagePropertyWithConfig extends PageProperty {
   config: PropertyConfiguration;
+}
+
+/**
+ * Normalize Boolean values from various formats
+ * @param value The value to normalize
+ * @returns Normalized boolean value
+ */
+function normalizeBoolean(value: any): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const lower = value.toLowerCase().trim();
+    return lower === 'true' || lower === '1' || lower === 'yes';
+  }
+  return false;
+}
+
+/**
+ * Format Boolean value based on display format
+ * @param value The boolean value to format
+ * @param format The display format to use
+ * @returns Formatted string representation
+ */
+function formatBoolean(value: boolean, format: BooleanDisplayFormat | undefined): string {
+  const displayFormat = format || BooleanDisplayFormat.YesNo;
+  switch (displayFormat) {
+    case BooleanDisplayFormat.YesNo:
+      return value ? 'Yes' : 'No';
+    case BooleanDisplayFormat.TrueFalse:
+      return value ? 'True' : 'False';
+    case BooleanDisplayFormat.Checkmark:
+      return value ? '✅' : '❌';
+    default:
+      return value ? 'Yes' : 'No';
+  }
 }
 
 const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesProps> = props => {
@@ -102,6 +137,11 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
                   console.error("Error: ", error);
                   values.push(allValues[prop]);
               }
+              break;
+            case "Boolean":
+              // Normalize Boolean values (handle true/false, 1/0, "true"/"false")
+              const boolValue = normalizeBoolean(allValues[prop]);
+              values.push(boolValue);
               break;
             default:
               // Default behavior is to treat it like a string
@@ -248,6 +288,14 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
             const noteValue = val.toString();
             content = (
               <span className={textStyleClass} style={{whiteSpace: 'pre-wrap'}}>{noteValue}</span>
+            );
+            break;
+          case "Boolean":
+            // Boolean fields should only be in Text mode (enforced in property pane)
+            const boolValue = normalizeBoolean(val);
+            const formattedBool = formatBoolean(boolValue, prop.config.booleanDisplayFormat);
+            content = (
+              <span className={textStyleClass}>{formattedBool}</span>
             );
             break;
           case "TaxonomyFieldTypeMulti":

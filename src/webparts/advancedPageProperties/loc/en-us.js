@@ -20,6 +20,10 @@ define([], function() {
     "TextStyleH3Label": "Heading 3",
     "TextStyleH4Label": "Heading 4",
     "TextStyleBodyLabel": "Body Text",
-    "HideLabelLabel": "Hide Property Label"
+    "HideLabelLabel": "Hide Property Label",
+    "BooleanDisplayFormatLabel": "Display Format",
+    "BooleanDisplayFormatYesNoLabel": "Yes / No",
+    "BooleanDisplayFormatTrueFalseLabel": "True / False",
+    "BooleanDisplayFormatCheckmarkLabel": "✅ / ❌"
   }
 });

@@ -17,6 +17,15 @@ export enum DisplayMode {
 }
 
 /**
+ * Display format options for Boolean field values
+ */
+export enum BooleanDisplayFormat {
+  YesNo = "yesNo",
+  TrueFalse = "trueFalse",
+  Checkmark = "checkmark"
+}
+
+/**
  * Configuration for a single page property
  */
 export interface PropertyConfiguration {
@@ -24,4 +33,5 @@ export interface PropertyConfiguration {
   displayMode: DisplayMode;
   textStyle: TextStyle;
   hideLabel: boolean;
+  booleanDisplayFormat?: BooleanDisplayFormat;
 }

@@ -20,6 +20,10 @@ declare interface IAdvancedPagePropertiesWebPartStrings {
   TextStyleH4Label: string;
   TextStyleBodyLabel: string;
   HideLabelLabel: string;
+  BooleanDisplayFormatLabel: string;
+  BooleanDisplayFormatYesNoLabel: string;
+  BooleanDisplayFormatTrueFalseLabel: string;
+  BooleanDisplayFormatCheckmarkLabel: string;
 }
 
 declare module 'AdvancedPagePropertiesWebPartStrings' {

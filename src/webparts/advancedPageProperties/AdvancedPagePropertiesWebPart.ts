@@ -21,7 +21,7 @@ import {
   ThemeChangedEventArgs,
   IReadonlyTheme
 } from '@microsoft/sp-component-base';
-import { PropertyConfiguration, DisplayMode, TextStyle } from './models';
+import { PropertyConfiguration, DisplayMode, TextStyle, BooleanDisplayFormat } from './models';
 
 export interface IAdvancedPagePropertiesWebPartProps {
   capsuleLinkUrl: string;
@@ -68,6 +68,8 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     if (!propertyConfigurations || propertyConfigurations.length === 0) {
       if (this.properties.selectedProperties && this.properties.selectedProperties.length > 0) {
         // Migrate legacy data
+        // Note: fieldTypeMap may not be populated yet during initial render, so we default to Capsule
+        // The property pane will correct this when opened
         propertyConfigurations = this.properties.selectedProperties.map(fieldName => ({
           fieldName: fieldName,
           displayMode: DisplayMode.Capsule,
@@ -108,9 +110,9 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
       // Store field type mapping for all fields
       this.fieldTypeMap.set(f.InternalName, f.TypeAsString);
 
-      // Allow Note fields now, but still exclude Boolean and User
+      // Allow Note and Boolean fields now, but still exclude User
       if (!f.FromBaseType && !f.Hidden && !f.Sealed && f.SchemaXml.indexOf("ShowInListSettings=\"FALSE\"") === -1
-          && f.TypeAsString !== "Boolean" && f.TypeAsString !== "User") {
+          && f.TypeAsString !== "User") {
         this.availableProperties.push({ key: f.InternalName, text: f.Title });
         Log.Write(f.TypeAsString);
       }
@@ -131,15 +133,22 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     }
     const selectedFieldName = this.availableProperties[0].key.toString();
     const fieldType = this.fieldTypeMap.get(selectedFieldName);
-    // Note fields default to Text mode, all others default to Capsule
-    const defaultDisplayMode = fieldType === "Note" ? DisplayMode.Text : DisplayMode.Capsule;
+    // Note and Boolean fields default to Text mode, all others default to Capsule
+    const defaultDisplayMode = (fieldType === "Note" || fieldType === "Boolean") ? DisplayMode.Text : DisplayMode.Capsule;
 
-    this.properties.propertyConfigurations.push({
+    const newConfig: PropertyConfiguration = {
       fieldName: selectedFieldName,
       displayMode: defaultDisplayMode,
       textStyle: TextStyle.Body,
       hideLabel: false
-    });
+    };
+
+    // Set default Boolean display format if it's a Boolean field
+    if (fieldType === "Boolean") {
+      newConfig.booleanDisplayFormat = BooleanDisplayFormat.YesNo;
+    }
+
+    this.properties.propertyConfigurations.push(newConfig);
     this.context.propertyPane.refresh();
   }
 
@@ -162,10 +171,14 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
       let index: number = _.toInteger(propertyPath.replace("selectedProperty", ""));
       if (this.properties.propertyConfigurations[index]) {
         this.properties.propertyConfigurations[index].fieldName = newValue;
-        // If the new field is a Note type, automatically set to Text mode
+        // If the new field is a Note or Boolean type, automatically set to Text mode
         const fieldType = this.fieldTypeMap.get(newValue);
-        if (fieldType === "Note") {
+        if (fieldType === "Note" || fieldType === "Boolean") {
           this.properties.propertyConfigurations[index].displayMode = DisplayMode.Text;
+          // Set default Boolean display format if it's a Boolean field
+          if (fieldType === "Boolean" && !this.properties.propertyConfigurations[index].booleanDisplayFormat) {
+            this.properties.propertyConfigurations[index].booleanDisplayFormat = BooleanDisplayFormat.YesNo;
+          }
         }
         // Refresh property pane to update display mode options
         this.context.propertyPane.refresh();
@@ -186,6 +199,11 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
       let index: number = _.toInteger(propertyPath.replace("hideLabel", ""));
       if (this.properties.propertyConfigurations[index]) {
         this.properties.propertyConfigurations[index].hideLabel = newValue;
+      }
+    } else if (propertyPath.indexOf("booleanDisplayFormat") >= 0) {
+      let index: number = _.toInteger(propertyPath.replace("booleanDisplayFormat", ""));
+      if (this.properties.propertyConfigurations[index]) {
+        this.properties.propertyConfigurations[index].booleanDisplayFormat = newValue;
       }
     }
   }
@@ -233,18 +251,20 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
         }));
 
       // Display mode selection
-      // Note: Note fields can only use Text mode, not Capsule
+      // Note: Note and Boolean fields can only use Text mode, not Capsule
       const fieldType = this.fieldTypeMap.get(config.fieldName);
       const isNoteField = fieldType === "Note";
-      const displayModeOptions = isNoteField
+      const isBooleanField = fieldType === "Boolean";
+      const isTextOnlyField = isNoteField || isBooleanField;
+      const displayModeOptions = isTextOnlyField
         ? [{ key: DisplayMode.Text, text: strings.DisplayModeTextLabel }]
         : [
             { key: DisplayMode.Capsule, text: strings.DisplayModeCapsuleLabel },
             { key: DisplayMode.Text, text: strings.DisplayModeTextLabel }
           ];
 
-      // If it's a Note field and currently set to Capsule, change it to Text
-      if (isNoteField && config.displayMode === DisplayMode.Capsule) {
+      // If it's a Note or Boolean field and currently set to Capsule, change it to Text
+      if (isTextOnlyField && config.displayMode === DisplayMode.Capsule) {
         config.displayMode = DisplayMode.Text;
       }
 
@@ -253,7 +273,7 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
           label: strings.DisplayModeLabel,
           options: displayModeOptions,
           selectedKey: config.displayMode,
-          disabled: isNoteField, // Disable dropdown for Note fields since only one option
+          disabled: isTextOnlyField, // Disable dropdown for Note/Boolean fields since only one option
         }));
 
       // Text style selection (only show when display mode is Text)
@@ -268,6 +288,20 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
               { key: TextStyle.Body, text: strings.TextStyleBodyLabel }
             ],
             selectedKey: config.textStyle,
+          }));
+      }
+
+      // Boolean display format selection (only show for Boolean fields)
+      if (isBooleanField) {
+        propDrops.push(PropertyPaneDropdown(`booleanDisplayFormat${index.toString()}`,
+          {
+            label: strings.BooleanDisplayFormatLabel,
+            options: [
+              { key: BooleanDisplayFormat.YesNo, text: strings.BooleanDisplayFormatYesNoLabel },
+              { key: BooleanDisplayFormat.TrueFalse, text: strings.BooleanDisplayFormatTrueFalseLabel },
+              { key: BooleanDisplayFormat.Checkmark, text: strings.BooleanDisplayFormatCheckmarkLabel }
+            ],
+            selectedKey: config.booleanDisplayFormat || BooleanDisplayFormat.YesNo,
           }));
       }
 

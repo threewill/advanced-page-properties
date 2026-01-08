@@ -13,6 +13,7 @@ Attempts to replicate the functionality of Page Properties with the following im
 - Support for hyperlink fields
 - Support for currency
 - Improved support for dates
+- Support for Boolean fields with multiple display formats
 - Flexible display modes (capsule or text) with customizable text styles
 - Option to hide property labels
 
@@ -60,6 +61,7 @@ Version|Date|Comments
 1.0.2|Aug 29, 2024|Capsule search links (configurable)
 1.0.2.4|Sep 14, 2024|Configurable query string field for capsule link
 1.0.3|Sep 20, 2024|Added support for single-select taxonomy fields
+1.0.5|Current|Added URL Page Properties web part with tile display support; Added Boolean field support with multiple display formats
 
 ## Disclaimer
 
@@ -135,8 +137,12 @@ The web part supports the following field types with special formatting:
 - **Multi-Choice Fields** - Displays all selected values as capsules
 - **Text and Choice Fields** - Standard text display as capsules
 - **Note Fields** (Multi-line text) - Displays as formatted text with preserved line breaks (Text mode only, Capsule mode not available)
+- **Boolean Fields** - Displays as formatted text with configurable display formats (Text mode only, Capsule mode not available):
+  - Yes/No format
+  - True/False format
+  - ✅/❌ (checkmark) format
 
-**Note**: The following field types are excluded from selection: Boolean and User fields.
+**Note**: The following field types are excluded from selection: User fields.
 
 ### Configuration Options
 
@@ -148,6 +154,11 @@ When configuring the web part, you can set:
    - Option to use the field's internal name as the query string parameter name
    - Or specify a custom query string parameter name (defaults to "q")
 4. **Property Selection** - Dynamically add or remove page properties to display
+5. **Per-Property Configuration** - For each selected property:
+   - **Display Mode** - Choose between Capsule or Text display (Note and Boolean fields are Text mode only)
+   - **Text Style** - When in Text mode, choose from H2, H3, H4, or Body text styles
+   - **Boolean Display Format** - For Boolean fields, choose from Yes/No, True/False, or ✅/❌ formats
+   - **Hide Label** - Option to hide the property label
 
 ### Usage
 
@@ -168,6 +179,8 @@ Basically add and remove properties until you are satisfied and you're good to g
 ### Special Features
 
 - **Taxonomy Field Handling**: Single-select taxonomy fields have special handling to correctly retrieve and display term labels (addresses a known SharePoint API limitation)
+- **Boolean Field Support**: Boolean fields support three display formats (Yes/No, True/False, ✅/❌) and automatically normalize values from various formats (true/false, 1/0, "true"/"false")
+- **Note Field Support**: Multi-line text fields preserve line breaks and are restricted to Text mode for better readability
 - **Theme Integration**: The web part automatically uses semantic colors from your site's theme for backgrounds, text, links, and capsule styling
 - **Responsive Design**: Capsules wrap appropriately and the layout adapts to different screen sizes
 
