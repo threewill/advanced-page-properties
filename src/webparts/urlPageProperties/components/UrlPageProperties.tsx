@@ -3,7 +3,7 @@ import styles from './UrlPageProperties.module.scss';
 import { IUrlPagePropertiesProps } from './IUrlPagePropertiesProps';
 import { Log } from '../../advancedPageProperties/utilities/Log';
 import { useState, useEffect, useRef } from 'react';
-import { UrlPropertyConfiguration, TileSize } from '../models';
+import { UrlPropertyConfiguration, TileSize, UrlDisplayMode } from '../models';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
 
 import { sp } from "@pnp/sp";
@@ -163,65 +163,129 @@ const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = prop
   };
 
   /**
-   * RenderTiles
-   * @description Renders the URL property tiles in a grid
-   * @returns
+   * Get display name for a URL property (tile or embed label)
    */
-  const RenderTiles = () => {
-    if (urlPropertyValues !== undefined && urlPropertyValues !== null && urlPropertyValues.length > 0) {
-      const tileSizeClass = GetTileSizeClass(props.tileSize);
-      // Convert camelCase to PascalCase for class name (e.g., "extraSmall" -> "ExtraSmall")
-      const sizeName = props.tileSize.charAt(0).toUpperCase() + props.tileSize.slice(1);
-      const containerSizeClass = `tiles${sizeName}`;
-
-      return (
-        <div className={`${styles.tilesContainer} ${styles[containerSizeClass]}`}>
-          {urlPropertyValues.map((urlProp, index) => {
-            // Priority: 1. config.displayName, 2. Description, 3. filename from URL
-            let displayName = '';
-            if (urlProp.config.displayName && urlProp.config.displayName.trim() !== '') {
-              displayName = urlProp.config.displayName;
-            } else if (urlProp.description && urlProp.description.trim() !== '') {
-              displayName = urlProp.description;
-            } else if (urlProp.fileName && urlProp.fileName.trim() !== '') {
-              displayName = urlProp.fileName;
-            } else {
-              displayName = urlProp.config.fieldName; // Fallback to field name if all else fails
-            }
-
-            const iconName = urlProp.config.iconName || 'Link';
-
-            return (
-              <a
-                key={index}
-                href={urlProp.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${styles.tile} ${tileSizeClass}`}
-                style={{
-                  backgroundColor: semanticColors.bodyBackground,
-                  borderColor: semanticColors.bodyDivider,
-                  color: semanticColors.bodyText
-                }}
-              >
-                <div className={styles.tileIcon}>
-                  <Icon iconName={iconName} />
-                </div>
-                <div className={styles.tileName}>{displayName}</div>
-              </a>
-            );
-          })}
-        </div>
-      );
-    } else {
-      return <div className={styles.emptyState}>No URL properties configured</div>;
+  const getDisplayName = (urlProp: UrlPropertyValue): string => {
+    if (urlProp.config.displayName && urlProp.config.displayName.trim() !== '') {
+      return urlProp.config.displayName;
     }
+    if (urlProp.description && urlProp.description.trim() !== '') {
+      return urlProp.description;
+    }
+    if (urlProp.fileName && urlProp.fileName.trim() !== '') {
+      return urlProp.fileName;
+    }
+    return urlProp.config.fieldName;
   };
 
+  const isEmbed = (config: UrlPropertyConfiguration): boolean =>
+    config.displayMode === UrlDisplayMode.Embed;
+
+  const tileValues = urlPropertyValues.filter(v => !isEmbed(v.config));
+  const embedValues = urlPropertyValues.filter(v => isEmbed(v.config));
+
+  /**
+   * RenderTiles
+   * @description Renders URL properties with displayMode tile as a grid of link tiles
+   */
+  const RenderTiles = () => {
+    if (tileValues.length === 0) return null;
+    const tileSizeClass = GetTileSizeClass(props.tileSize);
+    const sizeName = props.tileSize.charAt(0).toUpperCase() + props.tileSize.slice(1);
+    const containerSizeClass = `tiles${sizeName}`;
+
+    return (
+      <div className={`${styles.tilesContainer} ${styles[containerSizeClass]}`}>
+        {tileValues.map((urlProp, index) => {
+          const displayName = getDisplayName(urlProp);
+          const iconName = urlProp.config.iconName || 'Link';
+          return (
+            <a
+              key={`tile-${index}`}
+              href={urlProp.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.tile} ${tileSizeClass}`}
+              style={{
+                backgroundColor: semanticColors.bodyBackground,
+                borderColor: semanticColors.bodyDivider,
+                color: semanticColors.bodyText
+              }}
+            >
+              <div className={styles.tileIcon}>
+                <Icon iconName={iconName} />
+              </div>
+              <div className={styles.tileName}>{displayName}</div>
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+
+  /**
+   * RenderEmbeds
+   * @description Renders URL properties with displayMode embed as iframes (e.g. doc library folder view)
+   */
+  const RenderEmbeds = () => {
+    if (embedValues.length === 0) return null;
+    const height = Math.max(200, Math.min(1200, props.embedHeight || 400));
+    const minimal = props.hideEmbedChrome === true;
+    return (
+      <div className={styles.embedsContainer}>
+        {embedValues.map((urlProp, index) => {
+          const displayName = getDisplayName(urlProp);
+          if (minimal) {
+            return (
+              <iframe
+                key={`embed-${index}`}
+                src={urlProp.url}
+                title={displayName}
+                className={styles.embedFrame}
+                style={{ height: `${height}px` }}
+              />
+            );
+          }
+          return (
+            <div key={`embed-${index}`} className={styles.embedWrapper}>
+              <div className={styles.embedHeader}>
+                <span className={styles.embedTitle}>{displayName}</span>
+                <a
+                  href={urlProp.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.embedLink}
+                  style={{ color: semanticColors.link }}
+                >
+                  Open in new tab
+                </a>
+              </div>
+              <iframe
+                src={urlProp.url}
+                title={displayName}
+                className={styles.embedFrame}
+                style={{ height: `${height}px` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const hasAnyValues = urlPropertyValues.length > 0;
+
   return (
-    <div className={styles.urlPageProperties} style={{backgroundColor: semanticColors.bodyBackground, color: semanticColors.bodyText}}>
+    <div className={styles.urlPageProperties} style={{ backgroundColor: semanticColors.bodyBackground, color: semanticColors.bodyText }}>
       {RenderTitle()}
-      {RenderTiles()}
+      {hasAnyValues ? (
+        <>
+          {RenderTiles()}
+          {RenderEmbeds()}
+        </>
+      ) : (
+        <div className={styles.emptyState}>No URL properties configured</div>
+      )}
     </div>
   );
 };

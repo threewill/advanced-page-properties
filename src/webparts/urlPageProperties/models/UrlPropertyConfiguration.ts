@@ -10,6 +10,14 @@ export enum TileSize {
 }
 
 /**
+ * Display mode for a URL property: tile (link) or embedded iframe
+ */
+export enum UrlDisplayMode {
+  Tile = "tile",
+  Embed = "embed"
+}
+
+/**
  * Configuration for a single URL property
  */
 export interface UrlPropertyConfiguration {
@@ -17,4 +25,6 @@ export interface UrlPropertyConfiguration {
   displayName: string;
   iconName: string;
   customImageUrl?: string;
+  /** How to display: as a tile link or as an embedded iframe (e.g. doc library) */
+  displayMode?: UrlDisplayMode;
 }

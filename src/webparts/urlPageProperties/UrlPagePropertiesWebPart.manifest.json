@@ -27,6 +27,8 @@
       "properties": {
         "title": "URL Properties",
         "tileSize": "medium",
+        "embedHeight": 400,
+        "hideEmbedChrome": false,
         "urlProperties": []
       }
     }

@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import {
-  IPropertyPaneConfiguration, IPropertyPaneDropdownOption, IPropertyPaneField, PropertyPaneButton, PropertyPaneButtonType, PropertyPaneDropdown, PropertyPaneHorizontalRule, PropertyPaneTextField
+  IPropertyPaneConfiguration, IPropertyPaneDropdownOption, IPropertyPaneField, PropertyPaneButton, PropertyPaneButtonType, PropertyPaneDropdown, PropertyPaneHorizontalRule, PropertyPaneSlider, PropertyPaneTextField, PropertyPaneToggle
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
@@ -20,12 +20,16 @@ import {
   ThemeChangedEventArgs,
   IReadonlyTheme
 } from '@microsoft/sp-component-base';
-import { UrlPropertyConfiguration, TileSize } from './models';
+import { UrlPropertyConfiguration, TileSize, UrlDisplayMode } from './models';
 
 export interface IUrlPagePropertiesWebPartProps {
   title: string;
   tileSize: TileSize;
   urlProperties: UrlPropertyConfiguration[];
+  /** Height in pixels for embedded iframes (default 400) */
+  embedHeight: number;
+  /** When true, hide border, title, and "Open in new tab" on embeds so iframe feels part of the page */
+  hideEmbedChrome: boolean;
 }
 
 export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrlPagePropertiesWebPartProps> {
@@ -62,6 +66,8 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
         title: this.properties.title || '',
         tileSize: this.properties.tileSize || TileSize.Medium,
         urlProperties: this.properties.urlProperties || [],
+        embedHeight: this.properties.embedHeight != null ? this.properties.embedHeight : 400,
+        hideEmbedChrome: this.properties.hideEmbedChrome === true,
         themeVariant: this._themeVariant
       }
     );
@@ -106,7 +112,8 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
         this.properties.urlProperties.push({
           fieldName: selectedFieldName,
           displayName: description || selectedFieldName,
-          iconName: 'Link'
+          iconName: 'Link',
+          displayMode: UrlDisplayMode.Tile
         });
         this.context.propertyPane.refresh();
       });
@@ -166,6 +173,11 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
       if (this.properties.urlProperties[index]) {
         this.properties.urlProperties[index].iconName = newValue;
       }
+    } else if (propertyPath.indexOf("displayMode") >= 0) {
+      let index: number = _.toInteger(propertyPath.replace("displayMode", ""));
+      if (this.properties.urlProperties[index]) {
+        this.properties.urlProperties[index].displayMode = newValue;
+      }
     }
   }
 
@@ -198,6 +210,22 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
       selectedKey: this.properties.tileSize || TileSize.Medium
     }));
 
+    // Embed height (for URL properties displayed as embedded iframe)
+    propDrops.push(PropertyPaneSlider('embedHeight', {
+      label: strings.EmbedHeightLabel,
+      min: 200,
+      max: 1200,
+      value: this.properties.embedHeight != null ? this.properties.embedHeight : 400,
+      showValue: true
+    }));
+
+    // Minimal embed: no border, title, or "Open in new tab" link
+    propDrops.push(PropertyPaneToggle('hideEmbedChrome', {
+      label: strings.HideEmbedChromeLabel,
+      onText: strings.HideEmbedChromeOnText,
+      offText: strings.HideEmbedChromeOffText
+    }));
+
     propDrops.push(PropertyPaneHorizontalRule());
 
     // URL Property configurations
@@ -218,7 +246,17 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
           value: config.displayName
         }));
 
-      // Icon picker
+      // Display as: Tile (link) or Embedded (iframe)
+      propDrops.push(PropertyPaneDropdown(`displayMode${index.toString()}`, {
+        label: strings.DisplayModeLabel,
+        options: [
+          { key: UrlDisplayMode.Tile, text: strings.DisplayModeTileLabel },
+          { key: UrlDisplayMode.Embed, text: strings.DisplayModeEmbedLabel }
+        ],
+        selectedKey: config.displayMode != null ? config.displayMode : UrlDisplayMode.Tile
+      }));
+
+      // Icon picker (only relevant for tile mode; still show for consistency)
       propDrops.push(PropertyFieldIconPicker(`iconPicker${index.toString()}`, {
         buttonLabel: strings.IconPickerLabel,
         currentIcon: config.iconName || 'Link',

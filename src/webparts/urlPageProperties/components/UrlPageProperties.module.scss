@@ -175,6 +175,51 @@
     color: inherit;
   }
 
+  // Embedded iframe (e.g. doc library view)
+  .embedsContainer {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .embedWrapper {
+    width: 100%;
+    border: 1px solid;
+    border-radius: 4px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .embedHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid;
+  }
+
+  .embedTitle {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .embedLink {
+    font-size: 12px;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .embedFrame {
+    width: 100%;
+    border: none;
+    display: block;
+  }
+
   // Responsive adjustments
   @media (max-width: 768px) {
     .tilesContainer {

@@ -7,6 +7,13 @@ declare interface IUrlPagePropertiesWebPartStrings {
   TileSizeMediumLabel: string;
   TileSizeLargeLabel: string;
   TileSizeExtraLargeLabel: string;
+  EmbedHeightLabel: string;
+  HideEmbedChromeLabel: string;
+  HideEmbedChromeOnText: string;
+  HideEmbedChromeOffText: string;
+  DisplayModeLabel: string;
+  DisplayModeTileLabel: string;
+  DisplayModeEmbedLabel: string;
   UrlPropertyFieldLabel: string;
   DisplayNameLabel: string;
   IconPickerLabel: string;

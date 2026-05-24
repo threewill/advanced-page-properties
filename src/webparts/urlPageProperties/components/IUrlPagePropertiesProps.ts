@@ -7,5 +7,9 @@ export interface IUrlPagePropertiesProps {
   title: string;
   tileSize: TileSize;
   urlProperties: UrlPropertyConfiguration[];
+  /** Height in pixels for embedded iframes (e.g. doc library view) */
+  embedHeight: number;
+  /** When true, hide border, title, and "Open in new tab" on embeds */
+  hideEmbedChrome: boolean;
   themeVariant: IReadonlyTheme | undefined;
 }

@@ -18,9 +18,12 @@ Attempts to replicate the functionality of Page Properties with the following im
 - Option to hide property labels
 
 ### URL Page Properties
-A specialized web part for displaying URL page properties as interactive tiles in a grid layout:
+A specialized web part for displaying URL page properties as interactive tiles or embedded views:
 
 - Tile-based display similar to Quick Links
+- Embedded iframe display for inline views (e.g. document library folders)
+- Per-property display mode: tile link or embedded iframe
+- Configurable embed height and optional minimal chrome (no border, title, or link)
 - Configurable tile sizes (Extra Small to Extra Large)
 - Icon picker integration for custom tile icons
 - Smart display name resolution (configured name → URL description → filename)
@@ -61,7 +64,8 @@ Version|Date|Comments
 1.0.2|Aug 29, 2024|Capsule search links (configurable)
 1.0.2.4|Sep 14, 2024|Configurable query string field for capsule link
 1.0.3|Sep 20, 2024|Added support for single-select taxonomy fields
-1.0.5|Current|Added URL Page Properties web part with tile display support; Added Boolean field support with multiple display formats
+1.0.5||Added URL Page Properties web part with tile display support; Added Boolean field support with multiple display formats
+1.0.5.3|May 24, 2026|URL Page Properties: embedded iframe display mode with configurable height and minimal chrome
 
 ## Disclaimer
 
@@ -105,7 +109,7 @@ Version|Date|Comments
 This solution includes two web parts:
 
 1. **Advanced Page Properties** - Enhanced version of the standard Page Properties web part
-2. **URL Page Properties** - Specialized tile-based display for URL fields
+2. **URL Page Properties** - Tile-based or embedded iframe display for URL fields
 
 ---
 
@@ -190,11 +194,14 @@ Basically add and remove properties until you are satisfied and you're good to g
 
 ### Core Functionality
 
-This web part displays URL page properties as interactive tiles in a grid layout, similar to SharePoint Quick Links. It's designed specifically for URL fields and provides a modern, visual way to display links.
+This web part displays URL page properties as interactive tiles in a grid layout (similar to SharePoint Quick Links) or as embedded iframes inline on the page. It's designed specifically for URL fields and provides a modern, visual way to display links or embed related SharePoint views.
 
 ### Key Features
 
-- **Tile Display**: URL properties are displayed as clickable tiles in a responsive grid layout
+- **Tile Display**: URL properties configured as tiles are displayed as clickable links in a responsive grid layout
+- **Embedded Display**: URL properties configured as embeds render in an iframe (e.g. a document library folder view) with a configurable height (200–1200 px, default 400)
+- **Minimal Embed Chrome**: Optional setting to hide the border, title bar, and "Open in new tab" link so the iframe blends into the page
+- **Per-Property Display Mode**: Each URL property can be shown as a tile or an embed independently
 - **Configurable Tile Sizes**: Choose from 5 tile sizes:
   - Extra Small (64px × 64px)
   - Small (96px × 96px)
@@ -215,11 +222,14 @@ This web part displays URL page properties as interactive tiles in a grid layout
 When configuring the URL Page Properties web part, you can set:
 
 1. **Title** - Optional title displayed at the top of the web part
-2. **Tile Size** - Select from 5 predefined tile sizes
-3. **URL Property Configuration** - For each URL property:
+2. **Tile Size** - Select from 5 predefined tile sizes (applies to tile-mode properties)
+3. **Embed Height (px)** - Height of embedded iframes (200–1200, default 400)
+4. **Minimal Embed** - When enabled, hides border, title, and "Open in new tab" link on embeds
+5. **URL Property Configuration** - For each URL property:
    - **Property Field** - Select from available URL fields on the page
-   - **Display Name** - Custom name for the tile (always shown, seeded with field Description)
-   - **Icon** - Select an icon from SharePoint's icon library
+   - **Display Name** - Custom name (shown on tiles and embed headers; seeded with field Description)
+   - **Display As** - Tile (link) or Embedded (iframe)
+   - **Icon** - Select an icon from SharePoint's icon library (tile mode)
    - Delete option to remove properties
 
 ### Usage
@@ -229,6 +239,9 @@ The URL Page Properties web part is ideal for:
 - Displaying related resources or documentation links
 - Building navigation tiles from URL properties
 - Creating visually appealing link galleries
+- Embedding a document library or SharePoint view inline on a page via a URL page property
+
+**Note**: Embedded mode depends on the target URL allowing iframe embedding. Some SharePoint pages block embedding via `X-Frame-Options` or content security policies; test your URLs in embed mode before relying on them in production.
 
 ### Display Name Logic
 
@@ -239,5 +252,5 @@ The web part intelligently determines the display name for each tile using this 
 3. **Filename** - If Description is blank, extracts and displays the filename from the URL
 4. **Field Name** - Final fallback to the field's internal name
 
-This ensures tiles always have meaningful, user-friendly names displayed.
+This ensures tiles and embed headers always have meaningful, user-friendly names displayed.
 
