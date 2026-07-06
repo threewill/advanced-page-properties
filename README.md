@@ -1,5 +1,12 @@
 # Advanced Page Properties
 
+MIT-licensed [SharePoint Framework](https://learn.microsoft.com/sharepoint/dev/spfx/sharepoint-framework-overview) solution by [ThreeWill](https://threewill.com). Display modern page metadata with enhanced field formatting, capsule search links, and a dedicated URL tile/embed web part.
+
+[![CI](https://github.com/threewill/advanced-page-properties/actions/workflows/ci.yml/badge.svg)](https://github.com/threewill/advanced-page-properties/actions/workflows/ci.yml)
+![SPFx](https://img.shields.io/badge/spfx-1.23-green.svg)
+![Node](https://img.shields.io/badge/node-22.x-green.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 ## Summary
 
 This solution contains two web parts for displaying page properties with enhanced capabilities:
@@ -31,11 +38,9 @@ A specialized web part for displaying URL page properties as interactive tiles o
 
 ![see the difference](diff-screencap.png)
 
-## [Used SharePoint Framework Version](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/compatibility)
+## Used SharePoint Framework Version
 
-![spfx](https://img.shields.io/badge/spfx-1.23-green.svg)
-![node](https://img.shields.io/badge/node-22.x-green.svg)
-![license](https://img.shields.io/badge/license-MIT-blue.svg)
+[SharePoint Framework 1.23](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/compatibility)
 
 ## Applies to
 
@@ -55,7 +60,7 @@ A specialized web part for displaying URL page properties as interactive tiles o
 
 Solution|Author(s)
 --------|---------
-/ | Mike Homol, Principal Consultant, ThreeWill
+Advanced Page Properties | [ThreeWill](https://threewill.com) (Mike Homol)
 
 ## Version history
 
@@ -71,7 +76,7 @@ Version|Date|Comments
 
 ## Disclaimer
 
-This project is licensed under the [MIT License](LICENSE). See [SECURITY.md](SECURITY.md) for vulnerability reporting.
+This project is licensed under the [MIT License](LICENSE). See [SECURITY.md](SECURITY.md) for vulnerability reporting and [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 **THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
 
@@ -85,7 +90,7 @@ This project is licensed under the [MIT License](LICENSE). See [SECURITY.md](SEC
 - Switch to Node.js **22.14+** (`nvm use 22`)
 - Ensure that you are at the solution folder
 - In the command-line run:
-  - **npm install**
+  - **npm install** (uses `legacy-peer-deps` via `.npmrc`, standard for SPFx)
   - **npm start** (runs `heft start --clean`)
 - Update `config/serve.json` with your tenant workbench URL for page context during development
 
