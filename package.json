@@ -1,9 +1,14 @@
 {
   "name": "advanced-page-properties",
   "version": "1.1.0.0",
+  "description": "SharePoint Framework web parts for enhanced page property display with capsule links, taxonomy support, and URL tile/embed modes.",
   "private": false,
   "license": "MIT",
   "author": "ThreeWill",
+  "homepage": "https://github.com/threewill/advanced-page-properties#readme",
+  "bugs": {
+    "url": "https://github.com/threewill/advanced-page-properties/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/threewill/advanced-page-properties.git"

@@ -7,10 +7,10 @@
     "includeClientSideAssets": true,
     "isDomainIsolated": false,
     "developer": {
-      "name": "Mike Homol",
-      "websiteUrl": "homol.work",
-      "privacyUrl": "",
-      "termsOfUseUrl": "",
+      "name": "ThreeWill",
+      "websiteUrl": "https://threewill.com",
+      "privacyUrl": "https://threewill.com/privacy-policy/",
+      "termsOfUseUrl": "https://github.com/threewill/advanced-page-properties/blob/main/LICENSE",
       "mpnId": "990019737"
     }
   },
