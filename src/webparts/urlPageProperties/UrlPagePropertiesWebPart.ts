@@ -5,14 +5,14 @@ import {
   IPropertyPaneConfiguration, IPropertyPaneDropdownOption, IPropertyPaneField, PropertyPaneButton, PropertyPaneButtonType, PropertyPaneDropdown, PropertyPaneHorizontalRule, PropertyPaneSlider, PropertyPaneTextField, PropertyPaneToggle
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
+import { SPFI } from '@pnp/sp';
 
 import * as strings from 'UrlPagePropertiesWebPartStrings';
 import UrlPageProperties from './components/UrlPageProperties';
 import { IUrlPagePropertiesProps } from './components/IUrlPagePropertiesProps';
 import { PropertyFieldIconPicker } from '@pnp/spfx-property-controls/lib/PropertyFieldIconPicker';
-import "@pnp/sp/fields";
-import "@pnp/sp/fields/list";
-import { sp } from "@pnp/sp/presets/all";
+import { getSP } from '../../common/pnpjsConfig';
+import { getPageListId, getPageListItemId, hasPageListItem } from '../../common/pageContextHelpers';
 import { Log } from '../advancedPageProperties/utilities/Log';
 import * as _ from 'lodash';
 import {
@@ -34,8 +34,9 @@ export interface IUrlPagePropertiesWebPartProps {
 
 export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrlPagePropertiesWebPartProps> {
 
+  private _sp!: SPFI;
   private availableUrlProperties: IPropertyPaneDropdownOption[] = [];
-  private _themeProvider: ThemeProvider;
+  private _themeProvider!: ThemeProvider;
   private _themeVariant: IReadonlyTheme | undefined;
 
   private _handleThemeChangedEvent(args: ThemeChangedEventArgs): void {
@@ -44,7 +45,7 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
   }
 
   protected async onInit(): Promise<void> {
-    sp.setup({ spfxContext: this.context });
+    this._sp = getSP(this.context);
 
     // Consume the new ThemeProvider service
     this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
@@ -55,7 +56,7 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
     // Register a handler to be notified if the theme variant changes
     this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
 
-    super.onInit();
+    return super.onInit();
   }
 
   public render(): void {
@@ -63,6 +64,7 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
       UrlPageProperties,
       {
         context: this.context,
+        sp: this._sp,
         title: this.properties.title || '',
         tileSize: this.properties.tileSize || TileSize.Medium,
         urlProperties: this.properties.urlProperties || [],
@@ -77,7 +79,13 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
 
   private async getUrlProperties(): Promise<void> {
     Log.Write("Getting Site Page URL fields...");
-    const list = sp.web.lists.getByTitle("Site Pages");
+    const listId = getPageListId(this.context);
+    if (!listId) {
+      Log.Write("Page list context unavailable.");
+      return;
+    }
+
+    const list = this._sp.web.lists.getById(listId);
     const fi = await list.fields();
 
     this.availableUrlProperties = [];
@@ -122,10 +130,10 @@ export default class UrlPagePropertiesWebPart extends BaseClientSideWebPart<IUrl
 
   private async getFieldDescription(fieldName: string): Promise<string> {
     try {
-      // Try to get the current value from the page to seed the display name
-      if (this.context.pageContext.listItem !== undefined && this.context.pageContext.listItem !== null) {
-        const list = sp.web.lists.getByTitle("Site Pages");
-        const item = await list.items.getById(this.context.pageContext.listItem.id).select(fieldName).get();
+      const listId = getPageListId(this.context);
+      const listItemId = getPageListItemId(this.context);
+      if (listId && hasPageListItem(this.context) && listItemId !== undefined) {
+        const item = await this._sp.web.lists.getById(listId).items.getById(listItemId).select(fieldName)();
         if (item[fieldName] && item[fieldName].Description) {
           return item[fieldName].Description;
         }

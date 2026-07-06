@@ -4,14 +4,17 @@ import { IUrlPagePropertiesProps } from './IUrlPagePropertiesProps';
 import { Log } from '../../advancedPageProperties/utilities/Log';
 import { useState, useEffect, useRef } from 'react';
 import { UrlPropertyConfiguration, TileSize, UrlDisplayMode } from '../models';
-import { Icon } from 'office-ui-fabric-react/lib/Icon';
+import { Icon } from '@fluentui/react/lib/Icon';
+import { getPageListId, getPageListItemId, hasPageListItem } from '../../../common/pageContextHelpers';
 
-import { sp } from "@pnp/sp";
-import "@pnp/sp/webs";
-import "@pnp/sp/lists";
-import "@pnp/sp/fields";
-import "@pnp/sp/items";
-import { IReadonlyTheme } from '@microsoft/sp-component-base';
+const defaultSemanticColors = {
+  link: '#0078d4',
+  accentButtonBackground: '#0078d4',
+  accentButtonText: '#ffffff',
+  bodyBackground: '#ffffff',
+  bodyText: '#323130',
+  bodyDivider: '#edebe9',
+};
 
 /**
  * UrlPageProperties
@@ -62,11 +65,9 @@ const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = prop
   const [urlPropertyValues, setUrlPropertyValues] = useState<UrlPropertyValue[]>([]);
   const propsRef = useRef(props);
 
-  const { semanticColors }: IReadonlyTheme = props.themeVariant;
+  const semanticColors = { ...defaultSemanticColors, ...props.themeVariant?.semanticColors };
 
   propsRef.current = props;
-
-  sp.setup({ spfxContext: props.context });
 
   /**
    * refreshUrlProperties
@@ -74,6 +75,7 @@ const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = prop
    */
   async function refreshUrlProperties() {
     var newSetOfValues: UrlPropertyValue[] = [];
+    const listId = getPageListId(props.context);
 
     if (props.urlProperties !== undefined && props.urlProperties !== null && props.urlProperties.length > 0) {
       Log.Write(`${props.urlProperties.length.toString()} URL properties used.`);
@@ -83,9 +85,9 @@ const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = prop
 
       // Get the value(s) for the field from the list item itself
       var allValues: any = {};
-      if (props.context.pageContext.listItem !== undefined && props.context.pageContext.listItem !== null) {
-        allValues = await sp.web.lists.getByTitle("Site Pages").items.getById(props.context.pageContext.listItem.id).select(...fieldNames).get();
-        console.log(allValues);
+      const listItemId = getPageListItemId(props.context);
+      if (listId && hasPageListItem(props.context) && listItemId !== undefined) {
+        allValues = await props.sp.web.lists.getById(listId).items.getById(listItemId).select(...fieldNames)();
       }
 
       for (let i = 0; i < props.urlProperties.length; i++) {
@@ -194,8 +196,9 @@ const UrlPageProperties: React.FunctionComponent<IUrlPagePropertiesProps> = prop
     const sizeName = props.tileSize.charAt(0).toUpperCase() + props.tileSize.slice(1);
     const containerSizeClass = `tiles${sizeName}`;
 
+    const stylesRecord = styles as unknown as Record<string, string>;
     return (
-      <div className={`${styles.tilesContainer} ${styles[containerSizeClass]}`}>
+      <div className={`${styles.tilesContainer} ${stylesRecord[containerSizeClass] || ''}`}>
         {tileValues.map((urlProp, index) => {
           const displayName = getDisplayName(urlProp);
           const iconName = urlProp.config.iconName || 'Link';

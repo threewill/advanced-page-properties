@@ -2,7 +2,7 @@
   "@microsoft/generator-sharepoint": {
     "isCreatingSolution": true,
     "environment": "spo",
-    "version": "1.11.0",
+    "version": "1.23.2",
     "libraryName": "advanced-page-properties",
     "libraryId": "daae06a2-8599-445c-93c0-3bd739305f56",
     "packageManager": "npm",
