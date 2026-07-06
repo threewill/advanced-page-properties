@@ -6,14 +6,13 @@ import {
   PropertyPaneToggle
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
+import { SPFI } from '@pnp/sp';
 
 import * as strings from 'AdvancedPagePropertiesWebPartStrings';
 import AdvancedPageProperties from './components/AdvancedPageProperties';
 import { IAdvancedPagePropertiesProps } from './components/IAdvancedPagePropertiesProps';
-//import { PropertyFieldMultiSelect } from '@pnp/spfx-property-controls/lib/PropertyFieldMultiSelect';
-import "@pnp/sp/fields";
-import "@pnp/sp/fields/list";
-import { FieldTypes, sp } from "@pnp/sp/presets/all";
+import { getSP } from '../../common/pnpjsConfig';
+import { getPageListId } from '../../common/pageContextHelpers';
 import { Log } from './utilities/Log';
 import * as _ from 'lodash';
 import {
@@ -34,9 +33,10 @@ export interface IAdvancedPagePropertiesWebPartProps {
 
 export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart<IAdvancedPagePropertiesWebPartProps> {
 
+  private _sp!: SPFI;
   private availableProperties: IPropertyPaneDropdownOption[] = [];
   private fieldTypeMap: Map<string, string> = new Map(); // Maps field internal name to TypeAsString
-  private _themeProvider: ThemeProvider;
+  private _themeProvider!: ThemeProvider;
   private _themeVariant: IReadonlyTheme | undefined;
 
   private _handleThemeChangedEvent(args: ThemeChangedEventArgs): void {
@@ -45,9 +45,9 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
   }
 
   protected async onInit(): Promise<void> {
-    sp.setup({ spfxContext: this.context });
+    this._sp = getSP(this.context);
 
-      // Consume the new ThemeProvider service
+    // Consume the new ThemeProvider service
     this._themeProvider = this.context.serviceScope.consume(ThemeProvider.serviceKey);
 
     // If it exists, get the theme variant
@@ -56,7 +56,7 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
     // Register a handler to be notified if the theme variant changes
     this._themeProvider.themeChangedEvent.add(this, this._handleThemeChangedEvent);
 
-    super.onInit();
+    return super.onInit();
   }
 
   public render(): void {
@@ -86,6 +86,7 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
       AdvancedPageProperties,
       {
         context: this.context,
+        sp: this._sp,
         title: this.properties.title,
         propertyConfigurations: propertyConfigurations,
         themeVariant: this._themeVariant,
@@ -100,7 +101,13 @@ export default class AdvancedPagePropertiesWebPart extends BaseClientSideWebPart
 
   private async getPageProperties(): Promise<void> {
     Log.Write("Getting Site Page fields...");
-    const list = sp.web.lists.getByTitle("Site Pages");
+    const listId = getPageListId(this.context);
+    if (!listId) {
+      Log.Write("Page list context unavailable.");
+      return;
+    }
+
+    const list = this._sp.web.lists.getById(listId);
     const fi = await list.fields();
 
     this.availableProperties = [];

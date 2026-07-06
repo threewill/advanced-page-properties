@@ -9,6 +9,9 @@ node_modules
 # Build generated files
 dist
 lib
+lib-commonjs
+release
+jest-output
 solution
 temp
 *.sppkg
@@ -33,3 +36,13 @@ obj
 
 # Talisman
 .talismanrc
+
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.pfx
+*.p12
+*.key
+credentials.json
+secrets.json

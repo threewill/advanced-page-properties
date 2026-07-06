@@ -5,15 +5,18 @@ import { Log } from '../utilities/Log';
 import * as _ from 'lodash';
 import { useState, useEffect, useRef } from 'react';
 import { PageProperty, PropertyConfiguration, DisplayMode, TextStyle, BooleanDisplayFormat } from '../models';
+import { IFieldInfoExtended } from '../models/PageProperty';
+import { getPageListId, getPageListItemId, hasPageListItem } from '../../../common/pageContextHelpers';
+import { resolveTaxonomyTermLabel } from '../../../common/taxonomyHelpers';
 
-import { sp } from "@pnp/sp";
-import { taxonomy } from "@pnp/sp-taxonomy";
-import { DateTimeFieldFormatType, DateTimeFieldFriendlyFormatType, FieldTypes, IField, IFieldInfo } from "@pnp/sp/fields/types";
-import "@pnp/sp/webs";
-import "@pnp/sp/lists";
-import "@pnp/sp/fields";
-import "@pnp/sp/items";
-import { IReadonlyTheme } from '@microsoft/sp-component-base';
+const defaultSemanticColors = {
+  link: '#0078d4',
+  accentButtonBackground: '#0078d4',
+  accentButtonText: '#ffffff',
+  bodyBackground: '#ffffff',
+  bodyText: '#323130',
+  bodyDivider: '#edebe9',
+};
 
 /**
  * AdvancedPageProperties
@@ -65,11 +68,9 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
   const [pagePropValues, setPagePropValues] = useState<PagePropertyWithConfig[]>([]);
   const propsRef = useRef(props);
 
-  const { semanticColors }: IReadonlyTheme = props.themeVariant;
+  const semanticColors = { ...defaultSemanticColors, ...props.themeVariant?.semanticColors };
 
   propsRef.current = props;
-
-  sp.setup({ spfxContext: props.context });
 
   /**
    * refreshProperties
@@ -77,6 +78,7 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
    */
   async function refreshProperties () {
     var newSetOfValues: PagePropertyWithConfig[] = [];
+    const listId = getPageListId(props.context);
 
     if (props.propertyConfigurations !== undefined && props.propertyConfigurations !== null && props.propertyConfigurations.length > 0) {
       Log.Write(`${props.propertyConfigurations.length.toString()} properties used.`);
@@ -86,9 +88,9 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
 
       // Get the value(s) for the field from the list item itself
       var allValues: any = {};
-      if (props.context.pageContext.listItem !== undefined && props.context.pageContext.listItem !== null) {
-        allValues = await sp.web.lists.getByTitle("Site Pages").items.getById(props.context.pageContext.listItem.id).select(...fieldNames).get();
-        console.log(allValues);
+      const listItemId = getPageListItemId(props.context);
+      if (listId && hasPageListItem(props.context) && listItemId !== undefined) {
+        allValues = await props.sp.web.lists.getById(listId).items.getById(listItemId).select(...fieldNames)();
       }
 
       for (let i = 0; i < props.propertyConfigurations.length; i++) {
@@ -98,7 +100,9 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
         Log.Write(`Selected Property: ${prop}`);
 
         // Get field information, in case anything is needed in conjunction with value types
-        const field = await sp.web.lists.getByTitle("Site Pages").fields.getByInternalNameOrTitle(prop)();
+        const field: IFieldInfoExtended = listId
+          ? await props.sp.web.lists.getById(listId).fields.getByInternalNameOrTitle(prop)()
+          : await props.sp.web.lists.getByTitle("Site Pages").fields.getByInternalNameOrTitle(prop)();
 
         // Establish the values array
         var values: any[] = [];
@@ -112,30 +116,19 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
               values.push(JSON.parse(allValues[prop]));
               break;
             case "TaxonomyFieldType":
-              // Special behavior JUST for TaxonomyFieldType, as the API appears to be bugged when returning the label for a single select term set
-              // When we have this specific type, we need to update the existing label with a separate call to the API for the tern label for the GUID
-              // In all other ways it should behave the same as the default behavior
+              // Special behavior for TaxonomyFieldType: resolve label via term store API
               try {
-                const termStore = await taxonomy.termStores.get();
-                let newProp = {
-                  Label: allValues[prop].Label,
-                  TermGuid: allValues[prop].TermGuid,
-                  WssId: allValues[prop].WssId
+                const rawValue = allValues[prop];
+                const newProp = {
+                  Label: rawValue.Label,
+                  TermGuid: rawValue.TermGuid,
+                  WssId: rawValue.WssId
                 };
-                for (let storeIndex = 0; storeIndex < termStore.length; storeIndex++) {
-                  const store = termStore[storeIndex];
-                  const term = await store.getTermById(newProp.TermGuid).get();
-                  if (term !== null && term !== undefined) {
-                    console.log(`SPECIAL: Single select term found. (${term.Name})`);
-                    storeIndex = termStore.length;
-                    newProp.Label = term.Name;
-                  }
-                }
-
+                newProp.Label = await resolveTaxonomyTermLabel(props.sp, newProp.TermGuid, newProp.Label);
                 values.push(newProp);
               } catch (error) {
-                  console.error("Error: ", error);
-                  values.push(allValues[prop]);
+                Log.Write(`Taxonomy label resolution failed: ${error}`);
+                values.push(allValues[prop]);
               }
               break;
             case "Boolean":
@@ -196,7 +189,6 @@ const AdvancedPageProperties: React.FunctionComponent<IAdvancedPagePropertiesPro
    * @returns
    */
   const RenderPagePropValue = (prop: PagePropertyWithConfig) => {
-    console.log(prop);
     const isCapsule = prop.config.displayMode === DisplayMode.Capsule;
     const textStyleClass = GetTextStyleClass(prop.config.textStyle);
 

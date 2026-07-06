@@ -33,8 +33,9 @@ A specialized web part for displaying URL page properties as interactive tiles o
 
 ## [Used SharePoint Framework Version](https://learn.microsoft.com/en-us/sharepoint/dev/spfx/compatibility)
 
-![spfx](https://img.shields.io/badge/spfx-1.11-green.svg)
-![node](https://img.shields.io/badge/node-1.10-green.svg)
+![spfx](https://img.shields.io/badge/spfx-1.23-green.svg)
+![node](https://img.shields.io/badge/node-22.x-green.svg)
+![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Applies to
 
@@ -45,8 +46,8 @@ A specialized web part for displaying URL page properties as interactive tiles o
 
 ## Prerequisites
 
-- Node.js v10.x or later
-- SharePoint Framework development environment (SPFx 1.11.0)
+- Node.js **22.14+** (see `.nvmrc`; also supports Node 18.17.x)
+- SharePoint Framework **1.23.x** with Heft toolchain
 - Access to a SharePoint Online tenant or Microsoft 365 developer tenant
 - App Catalog configured in your tenant (for deployment)
 
@@ -66,8 +67,11 @@ Version|Date|Comments
 1.0.3|Sep 20, 2024|Added support for single-select taxonomy fields
 1.0.5||Added URL Page Properties web part with tile display support; Added Boolean field support with multiple display formats
 1.0.5.3|May 24, 2026|URL Page Properties: embedded iframe display mode with configurable height and minimal chrome
+1.1.0.0|July 2026|SPFx 1.23 / Heft migration; PnPjs v4; Node 22; page list resolved via page context
 
 ## Disclaimer
+
+This project is licensed under the [MIT License](LICENSE). See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 **THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
 
@@ -78,31 +82,25 @@ Version|Date|Comments
 ### Development Setup
 
 - Clone this repository
+- Switch to Node.js **22.14+** (`nvm use 22`)
 - Ensure that you are at the solution folder
 - In the command-line run:
   - **npm install**
-  - **gulp serve**
+  - **npm start** (runs `heft start --clean`)
+- Update `config/serve.json` with your tenant workbench URL for page context during development
 
 ### Deployment
 
-1. Build the solution:
+1. Production build and package:
    ```
-   gulp build --ship
-   ```
-
-2. Bundle the solution:
-   ```
-   gulp bundle --ship
+   npm run build
    ```
 
-3. Package the solution:
-   ```
-   gulp package-solution --ship
-   ```
+2. Deploy the `.sppkg` file from `sharepoint/solution/` to your tenant's App Catalog
 
-4. Deploy the `.sppkg` file from `sharepoint/solution/` to your tenant's App Catalog
+3. Add the app to your site collection (or upgrade existing deployment)
 
-5. Add the app to your site collection and then add the web parts to a page
+4. Validate on an existing configured page — see [docs/DEPLOYMENT_VALIDATION.md](docs/DEPLOYMENT_VALIDATION.md)
 
 ## Web Parts
 
