@@ -1,0 +1,44 @@
+---
+description: Generated image preview-and-approve gate (any image-generation tool)
+alwaysApply: true
+---
+
+# Generated image: preview before next step
+
+Whenever an image-generating tool returns a result — including **Replicate**, **Cursor `GenerateImage`**, HuggingFace, DALL-E-style integrations, image-producing MCPs, etc. — **stop and request explicit user approval before consuming the image** in any subsequent action.
+
+## Required gate
+
+After the image has been produced (and, where applicable, persisted locally per `replicate-image-handling.mdc`):
+
+1. **Show a preview** to the user. Acceptable preview methods, in order of preference:
+   - Open the local file in the default image viewer (e.g. `Invoke-Item <path>` on Windows).
+   - Render inline if the chat surface supports image rendering.
+   - Otherwise, clearly state the local path so the user can open it themselves.
+2. **Pause and ask** the user to choose one of:
+   - **Proceed** with the planned next step.
+   - **Re-render** with a refined prompt / different seed / different model parameters.
+   - **Cancel** and stop the workflow.
+3. **Do not chain** into any of the following until the user approves:
+   - Sending an email or Teams message with the image.
+   - Adding the image to a Word doc or other artifact.
+   - Copying the image into a project repo / `/images` folder.
+   - Uploading the image to OneDrive / SharePoint / any cloud surface.
+
+## Re-render loop
+
+If the user asks for a re-render:
+
+- Stay in scope on the same intent (do not move on to other tasks).
+- Apply the user's feedback to the next generation prompt.
+- Repeat the preview gate — every new render gets its own approval pass.
+
+## Why this rule exists
+
+- Image generations are non-deterministic and frequently need a second pass.
+- Once an image is sent to email / posted to Teams / committed to a repo, undoing it is awkward.
+- Approval-before-consume avoids wasted external sends and keeps the user in control of the asset that will represent the work.
+
+## Cross-references
+
+- `replicate-image-handling.mdc` — local-first persistence and consumption patterns specific to Replicate-style ephemeral URLs.

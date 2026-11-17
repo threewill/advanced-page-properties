@@ -1,0 +1,13 @@
+---
+description: Pointer to vendored team-non-negotiables standard
+alwaysApply: true
+---
+
+# Pointer — team-non-negotiables
+
+Follow the vendored ThreeWill engineering standard:
+[`docs/agent/standards/team-non-negotiables.mdc`](../../docs/agent/standards/team-non-negotiables.mdc)
+
+Do **not** edit docs/agent/standards/ by hand. Product-only overrides live in docs/agent/ and root AGENTS.md.
+
+If a path inside the vendored file says `.cursor/rules/...`, read `docs/agent/standards/...` instead.

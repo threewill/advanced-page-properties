@@ -1,0 +1,13 @@
+---
+description: Pointer to vendored replicate-image-handling standard
+alwaysApply: true
+---
+
+# Pointer — replicate-image-handling
+
+Follow the vendored ThreeWill engineering standard:
+[`docs/agent/standards/replicate-image-handling.mdc`](../../docs/agent/standards/replicate-image-handling.mdc)
+
+Do **not** edit docs/agent/standards/ by hand. Product-only overrides live in docs/agent/ and root AGENTS.md.
+
+If a path inside the vendored file says `.cursor/rules/...`, read `docs/agent/standards/...` instead.

@@ -1,0 +1,32 @@
+---
+description: Microsoft Learn MCP — ground Microsoft product answers in official docs when available
+alwaysApply: true
+---
+
+# Microsoft Learn MCP (official documentation)
+
+When the user’s question is **materially about a Microsoft product or platform** (for example Azure, Microsoft 365, Dynamics 365, Power Platform, .NET, Windows Server, Microsoft Entra, SharePoint Framework, or other first-party Microsoft APIs and behavior), treat **Microsoft Learn** as a **primary grounding source** whenever the **Microsoft Learn MCP** is available in this environment.
+
+## When this applies
+
+Use this workflow for questions about **how something works, how to configure it, supported options, limits, deprecation, or official guidance** from Microsoft—not for generic programming questions with no Microsoft surface area.
+
+## Mandatory behavior when the MCP is available
+
+1. **Discover the server**: In the MCP filesystem (`mcps/` tree), locate the Microsoft Learn server (names vary; often includes `microsoft-learn`).
+2. **Read tool schemas first**: Inspect each tool’s JSON descriptor before calling it (required parameters, limits).
+3. **Use the docs workflow**:
+   - Start with **`microsoft_docs_search`** for breadth and candidate URLs.
+   - Use **`microsoft_code_sample_search`** when the user needs **implementation samples** from official docs.
+   - Use **`microsoft_docs_fetch`** when you need **full page depth** (tutorials, prerequisites, troubleshooting, incomplete excerpts).
+4. **Merge results**: Combine Learn excerpts (with **titles and URLs**) with any other repo context, code, or MCP output. Do **not** silently ignore Learn results when they are available and relevant.
+
+## When the MCP is not available
+
+Say clearly that the Microsoft Learn MCP is **not configured**, then proceed with other allowed sources (for example other MCPs or web fetch). Do **not** claim Learn MCP retrieval ran if it did not.
+
+## Required context source
+
+For stable team guidance (adoption, configuration pointers), read:
+
+- `.cursor/rules/docs/mcp/microsoft-learn.md`

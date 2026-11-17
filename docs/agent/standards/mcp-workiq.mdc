@@ -1,0 +1,19 @@
+---
+description: Work IQ (Agent365) tool routing + safety
+alwaysApply: true
+---
+
+# Work IQ (Agent365 MCP) routing
+
+When a request is clearly about Microsoft 365 artifacts (mail, calendar, Teams, OneDrive, SharePoint, Word), use the corresponding Agent365 MCP server rather than guessing or hallucinating.
+
+## Defaults
+
+- Prefer read-only actions unless the user explicitly requests a change.
+- Use the narrowest tool that satisfies the request.
+
+## Required context source
+
+Before doing multi-step workflows across M365 tools, read:
+
+- `.cursor/rules/docs/mcp/workiq.md`

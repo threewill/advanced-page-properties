@@ -1,0 +1,17 @@
+---
+description: Optional Link MCP recall for personal defaults (does not override repo rules)
+alwaysApply: true
+---
+
+# Link MCP: personal memory bridge
+
+When the **`link`** MCP server is available and the task is non-trivial or preference-heavy, **consider** calling **`memory_brief`** (and, if needed, **`query_link`**) early so personal standing context is in scope.
+
+## Authority (non-negotiable)
+
+- Repo-root **`AGENTS.md`**, **`.cursor/rules/`** (team process and MCP routing), **`docs/runbooks/`**, and **skills** are **canonical** for team process, MCP routing, and safety.
+- If anything from Link conflicts with those sources, **follow the repo** and tell the user the memory may be stale.
+
+## What Link is not
+
+Link does **not** replace rules or guarantee compliance. It only helps recall what you (or prior sessions) stored in the wiki when tools are invoked.

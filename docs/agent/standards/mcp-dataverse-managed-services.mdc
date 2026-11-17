@@ -1,0 +1,51 @@
+---
+description: Dataverse MCP (Managed Services) safety + routing
+alwaysApply: true
+---
+
+# Dataverse MCP: Managed Services (`dataverse-managed-services`)
+
+When the user's request involves managed services work tracking, value reporting, shelf items, sprints, or client dashboards, prefer the MCP server **`dataverse-managed-services`**.
+
+## Mandatory workflow
+
+- **Before writing any SQL** with `read_query`, run `describe_table` for every table you plan to use (and `list_tables` if you're not sure of the logical name).
+- Prefer **small, verifiable queries** over one giant query.
+- Treat `account.tw_ismanagedservicecustomer = true` as the default filter for "managed services clients" unless the user asks otherwise.
+- When a user references an account by acronym (e.g. "AAA"), interpret it as `account.tw_alias = 'AAA'`.
+
+## Safety defaults
+
+- Default to **read-first**.
+- Do **not** use `create_record`, `update_record`, `delete_record`, `create_table`, `update_table`, or `delete_table` unless the user explicitly requests a persistent change.
+
+## Work items (`tw_customerboard`) — create checklist
+
+On **`create_record`** for `tw_customerboard`:
+
+1. **Hard ban on `tw_workitemid` in writes** — it is a Dataverse **autonumber**. On every `create_record` / `update_record` for `tw_customerboard`:
+   - **Omit the key entirely** from the JSON `item` (not `null`, not `""`, not a guessed `TW-…` / letter code).
+   - **Do not** invent or “reserve” IDs (e.g. `DK`, `TW-105251`, `V`, `KX`, `CA`). Those short values you see after create are **platform-assigned**, not agent-chosen.
+   - **Form/UI Required ≠ API required**: model-driven forms may mark Work Item as required; `describe('tables/tw_customerboard')` shows `tw_workitemid` **without** `NOT NULL`. Create succeeds **without** it; the server fills the autonumber.
+   - After create, use only the returned **`tw_customerboardid`** (GUID) for agenda links and updates. Optionally `read_query` the new GUID to display the assigned `tw_workitemid` — never write it back.
+   - **Pre-flight**: before calling `create_record`, re-read your `item` JSON; if `tw_workitemid` appears for any reason, strip it and recreate the payload.
+2. **Required fields** (confirm via `describe('tables/tw_customerboard')`): at minimum `tw_title`, `tw_application`, `tw_category`, `tw_severity`, `tw_progress`. Set sprint, assignee, description when the user provides them.
+3. **Classifier defaults** — when the user does **not** supply a value, set **Medium** on all three:
+
+| Logical field | Lookup table | Medium label | GUID |
+|---|---|---|---|
+| `tw_businessimpact` | `tw_workitembusinessimpact` | M | `53c369f5-54d6-ee11-9079-000d3a5789bf` |
+| `tw_effort` (complexity/effort) | `tw_workitemsize` | M - Medium | `3bf14a12-3fd6-ee11-9079-0022482eab8d` |
+| `tw_severity` | `tw_workitemseverity` | Medium | `3a54e614-3fd6-ee11-9079-00224825b557` |
+
+Use `{"relatedTable":"<table>","recordId":"<guid>"}` in `create_record` JSON for lookups. If the user specifies a different level, use their value instead.
+
+4. **Completed / Pending signoff** — set **`tw_datecompleted`** in the same write as the progress change.
+
+Full detail: `.cursor/rules/docs/mcp/dataverse-managed-services.md` and `docs/runbooks/dataverse-managed-services.md`.
+
+## Required context source
+
+Before answering non-trivial questions, read:
+
+- `.cursor/rules/docs/mcp/dataverse-managed-services.md`

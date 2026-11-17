@@ -1,0 +1,31 @@
+# Plan mode first
+
+**Decided by:** Mike Homol, Director of Innovation (2026-11-11)  
+**Applies to:** every ThreeWill developer and every AI agent (Cursor locally, Cursor cloud agents, Grok Bot bots).
+
+Cursor rule: [`plan-mode-first.mdc`](../plan-mode-first.mdc) (`alwaysApply: true`).
+
+## Default
+
+Before writing code for a **feature, enhancement, refactor, or other non-trivial change**, start in **plan mode**. Do not implement until the plan is **reviewed and approved**.
+
+## Local Cursor
+
+Use Cursor **Plan mode** for the planning pass.
+
+## Cloud agents, background agents, and bots
+
+The **first run** produces a **written plan only** (no implementation). Put it in the product repo, typically `docs/plans/<topic>.md`, and open a PR for review. Cover:
+
+- Goal
+- Approach
+- Affected areas
+- Risks
+- Open questions
+- Test / regression impact
+
+Implementation starts only after that plan is approved (follow-up run, or a later PR on an implementation branch).
+
+## Exception: bug fixes
+
+Bug fixes may go straight to a fix branch and PR. Still follow the product repo’s docs and regression rules.

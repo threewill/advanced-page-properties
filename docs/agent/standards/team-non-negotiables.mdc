@@ -1,0 +1,25 @@
+---
+description: Team non-negotiables — defaults with documented exceptions for all solutions
+alwaysApply: true
+---
+
+# Team Non-Negotiables
+
+Follow the living taxonomy in [docs/team-non-negotiables.md](docs/team-non-negotiables.md).
+
+## When scaffolding, reviewing, or shipping a solution
+
+1. Apply **Must-Haves For All Solutions** as defaults.
+2. Apply the matching **Must-Haves By Solution Type** section(s).
+3. Raise items from **Nice-To-Haves / Always Consider** when relevant; do not block unless context makes them mandatory.
+4. If a must-have cannot be met, require a documented exception (why + alternate safeguard) in README, AGENTS.md, or EXCEPTIONS.md.
+
+## High-signal defaults
+
+- Telemetry: errors **and** usage; Azure Application Insights when the stack supports it.
+- Error handling: no swallowed exceptions; safe user messages; diagnostics in logs/telemetry.
+- Unit tests by default; document exceptions (e.g. some SPFx cases) with alternate verification.
+- Keep docs and feature/capability lists current with behavior changes.
+- Automatic versioning on builds.
+- Enterprise / client-delivered: CI/CD definitions in-repo from day one.
+- SPFx: use `threewill-engineering-standards` (this submodule) for shared UI and patterns.

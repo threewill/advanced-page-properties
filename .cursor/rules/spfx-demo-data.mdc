@@ -1,0 +1,13 @@
+---
+description: Pointer to vendored spfx-demo-data standard
+alwaysApply: true
+---
+
+# Pointer — spfx-demo-data
+
+Follow the vendored ThreeWill engineering standard:
+[`docs/agent/standards/spfx-demo-data.mdc`](../../docs/agent/standards/spfx-demo-data.mdc)
+
+Do **not** edit docs/agent/standards/ by hand. Product-only overrides live in docs/agent/ and root AGENTS.md.
+
+If a path inside the vendored file says `.cursor/rules/...`, read `docs/agent/standards/...` instead.
