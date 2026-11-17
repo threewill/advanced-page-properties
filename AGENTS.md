@@ -11,7 +11,7 @@ Product marketing copy: [`Shelf-Details.md`](Shelf-Details.md). Keep the product
 
 ## Read first
 
-1. [`docs/agent/standards/`](docs/agent/standards/) — vendored ThreeWill engineering standards (never edit by hand; SHA in [`docs/agent/standards/README.md`](docs/agent/standards/README.md)). Paths in those files that say `.cursor/rules/` mean this copy.
+1. [`docs/agent/standards/`](docs/agent/standards/) — **curated public subset** of ThreeWill engineering standards from SHA `5baefffbf49d3d9dae2ae996f2d2be6687f53439` (never paste internal catalogs back in; see that folder’s README). Paths in those files that say `.cursor/rules/` mean this copy.
 2. [`docs/agent/context-harvest.md`](docs/agent/context-harvest.md) — harvested context, checked against `main`.
 3. [`docs/decisions/DECISION-LOG.md`](docs/decisions/DECISION-LOG.md) — D01–D23.
 4. [`docs/plans/`](docs/plans/) — historical Cursor plans (all completed; see [`docs/plans/README.md`](docs/plans/README.md)).
@@ -66,9 +66,15 @@ Do **not** commit tenant workbench URLs, secrets, or Azure Storage keys. `config
 - **`npm ci` needs `legacy-peer-deps`** (`.npmrc`).
 - **CI** (`.github/workflows/ci.yml`) does **not** meet the minutes-budget standard (`TD-01`). Do not change that workflow unless Mike asks. This docs-only work will still run the full SPFx production build (~2 billed minutes per run historically).
 
-## Standards copy (not a submodule)
+## Standards copy (public subset, not a submodule)
 
-This repo **copies** `threewill-engineering-standards` into `docs/agent/standards/` (copy-and-sync). Thin pointers: `.cursor/rules/*.mdc`. Repo-specific overrides belong in `docs/agent/` and this file — not in the vendored folder. Refresh the copy with a sync PR; do not invent a second local rewrite of shared rules.
+This public repo vendors a **curated subset** of `threewill-engineering-standards` at SHA `5baefffbf49d3d9dae2ae996f2d2be6687f53439` into `docs/agent/standards/` (copy-and-sync). Thin pointers: `.cursor/rules/*.mdc`.
+
+**Kept:** plan-mode-first, team-non-negotiables, ci-minutes-budget, mcp-microsoft-learn, generated-image-preview, spfx-demo-data, spfx-provisioning, spfx-threewill-ui, matching `docs/` companions, and `patterns/ThreeWillFooter/` (referenced by the UI rule).
+
+**Left out** (internal ThreeWill plumbing — Managed Services Dataverse, Ruddr, Work IQ, Link memory, Replicate local-save paths, bootstrap `.ps1` scripts): `mcp-dataverse-managed-services`, `mcp-ruddr`, `mcp-workiq`, `link-memory-bridge`, `managed-services-canvas-top-of-mind`, `replicate-image-handling`, their `docs/mcp/` catalogs, `templates/AGENTS.mcp-managed-services.snippet.md`, and `tools/*.ps1`.
+
+Repo-specific overrides belong in `docs/agent/` and this file — not in the vendored folder. Refresh with a sync PR from a newer SHA, then re-apply this subset.
 
 ## Documented exceptions to team must-haves
 

@@ -19,8 +19,6 @@ If **`git submodule add` fails** because `.cursor/rules` already exists (Cursor 
 Rename-Item -Path .cursor/rules -NewName rules.pre-threewill-backup
 ```
 
-Or use `tools/init-product-repo.ps1` with **`-BackupExistingRules`** from this standards repo.
-
 ## 1b) Add product-specific context (`AGENTS.md`)
 
 The submodule at `.cursor/rules/` is **only** for shared ThreeWill standards. Add a root **`AGENTS.md`** in your product repo for domain-specific instructions (inventory, naming, environments, etc.). Copy or adapt [`templates/AGENTS.product.snippet.md`](../templates/AGENTS.product.snippet.md).

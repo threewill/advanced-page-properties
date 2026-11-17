@@ -1,5 +1,7 @@
 # Product-specific context (this repository)
 
+> In **this public product**, standards are a curated copy under `docs/agent/standards/` (see that folder’s README), not a git submodule. The submodule wording below is the upstream template for private repos.
+
 ThreeWill engineering standards live in the **git submodule** at `.cursor/rules/` ([threewill-engineering-standards](https://github.com/threewill/threewill-engineering-standards)). That submodule is **shared across products**—do not use it for rules that apply only to this app.
 
 Use **this file** (`AGENTS.md` at the repository root) for:

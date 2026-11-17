@@ -15,13 +15,13 @@ This document is for **people** (you and your team). Cursor agents primarily rea
 | New SPFx solution bootstrap | [`docs/spfx-new-solution.md`](spfx-new-solution.md) | How to start a new SPFx repo with standards |
 | Product-only Cursor context | Root `AGENTS.md` in each **product** repo | Not in the standards submodule; start from [`templates/AGENTS.product.snippet.md`](../templates/AGENTS.product.snippet.md) |
 | Submodule path collision | [README.md](../README.md#troubleshooting-cursorrules-already-exists) | When `.cursor/rules` already exists before `git submodule add` |
-| ThreeWill footer (canonical code) | [`patterns/ThreeWillFooter/`](../patterns/ThreeWillFooter/) | Copy via [`tools/sync-spfx-patterns.ps1`](../tools/sync-spfx-patterns.ps1) |
+| ThreeWill footer (canonical code) | [`patterns/ThreeWillFooter/`](../patterns/ThreeWillFooter/) | Copy the TSX, SCSS, and PNG together into the product |
 
 Product repos mount this repository as a **submodule** at `.cursor/rules/`, so opening the product folder in Cursor loads the same rules. **Product-only** instructions belong in the product repo’s root **`AGENTS.md`** (not inside the submodule). If `submodule add` fails because `.cursor/rules` already exists, see [README.md](../README.md#troubleshooting-cursorrules-already-exists).
 
 ## ThreeWill footer logo
 
-The ThreeWill mark is a **bundled static asset** (`ThreeWill-headerLogo-onWhite.png`), not a URL you type into SharePoint. Keep **TSX, SCSS, and PNG co-located** under `src/components/threewill/` and commit all three. Running [`tools/sync-spfx-patterns.ps1`](../tools/sync-spfx-patterns.ps1) copies the logo and, when needed, adds [`templates/spfx-asset-modules.d.ts`](../templates/spfx-asset-modules.d.ts) so `import … from '*.png'` type-checks. Full agent checklist: **ThreeWillFooter logo** in [`spfx-threewill-ui.mdc`](../spfx-threewill-ui.mdc).
+The ThreeWill mark is a **bundled static asset** (`ThreeWill-headerLogo-onWhite.png`), not a URL you type into SharePoint. Keep **TSX, SCSS, and PNG co-located** under `src/components/threewill/` and commit all three. Copy them from [`patterns/ThreeWillFooter/`](../patterns/ThreeWillFooter/) and, when needed, add [`templates/spfx-asset-modules.d.ts`](../templates/spfx-asset-modules.d.ts) so `import … from '*.png'` type-checks. Full agent checklist: **ThreeWillFooter logo** in [`spfx-threewill-ui.mdc`](../spfx-threewill-ui.mdc).
 
 ## Golden reference: dashboards and tiles
 
@@ -44,9 +44,9 @@ When building or refactoring a dashboard web part, **match that structure and to
 
 ## Keeping products in sync
 
-1. Update patterns or rules in **this** repo and push.
-2. In each product: `git submodule update --remote --merge .cursor/rules`
-3. Run [`tools/sync-spfx-patterns.ps1`](../tools/sync-spfx-patterns.ps1) where applicable (footer and future pattern folders).
+1. Update patterns or rules in **threewill-engineering-standards** and push.
+2. In this public product: refresh the curated copy under `docs/agent/standards/` (do not reintroduce omitted internal catalogs).
+3. Copy [`patterns/ThreeWillFooter/`](../patterns/ThreeWillFooter/) into the product when adopting the footer.
 
 ## Contributing new patterns
 
@@ -54,6 +54,6 @@ When you settle on a repeated UI pattern (new tile type, table density, panel ch
 
 1. Implement it once in a **reference web part** (often DDS-Referrals).
 2. Add a short section to this file and expand [`spfx-threewill-ui.mdc`](../spfx-threewill-ui.mdc).
-3. Optionally add a folder under `patterns/` and extend `sync-spfx-patterns.ps1`.
+3. Optionally add a folder under `patterns/` in the standards repo and document the copy steps.
 
 That keeps **humans**, **Cursor**, and **code** pointed at the same source of truth.

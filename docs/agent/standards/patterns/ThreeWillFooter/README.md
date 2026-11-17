@@ -24,5 +24,5 @@ import { ThreeWillFooter } from '../../components/threewill/ThreeWillFooter';
 ### Notes
 
 - Logo is the official **`ThreeWill-headerLogo-onWhite.png`** (same file name as DDS Referrals), co-located with the component and loaded via a static **`import`** so webpack bundles it into the web part. Always commit the PNG beside the TSX; missing files are the most common cause of a broken logo.
-- If marketing ships a new logo, replace the PNG in **`patterns/ThreeWillFooter/`** in this repo, run `sync-spfx-patterns.ps1` on each product, and commit.
+- If marketing ships a new logo, replace the PNG in **`patterns/ThreeWillFooter/`** in the standards repo, copy it into each product, and commit.
 - UTM parameters default to DDS values and can be overridden via props.

@@ -158,7 +158,7 @@ How AI and tooling should help keep each area in place.
 | Unit testing default + exceptions | Rule + checklist | “Tests or documented exception” gate in PR/review skill |
 | Documentation freshness | Rule + checklist | “Update docs with behavior change” always-apply nudge |
 | Automatic versioning | Automation + checklist | CI versioning template; new-repo skill |
-| Enterprise CI/CD in-repo | Skill + automation + checklist | `init-product-repo` / scaffold skill; YAML templates under `templates/` |
+| Enterprise CI/CD in-repo | Skill + automation + checklist | Scaffold skill; YAML templates under `templates/` |
 | SPFx + engineering standards | Existing rules + submodule | `spfx-threewill-ui`, provisioning, demo-data; submodule required |
 | Security by default | Review skill + checklist | Security review skill; secret scanning in CI |
 | AI delivery hygiene | Always-apply rules | Existing agent rules; verify-before-done checklist |

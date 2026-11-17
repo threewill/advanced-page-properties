@@ -1,7 +1,7 @@
 <!-- TW:PREREQS:START -->
 ## Prerequisites (ThreeWill standards)
 
-This repo consumes `threewill-engineering-standards` as a git submodule for Cursor rules and shared standards.
+This public product consumes a curated copy of `threewill-engineering-standards` under `docs/agent/standards/` (not a git submodule). Private repos typically use a submodule instead.
 
 - Initialize/update submodules:
   - `git submodule update --init --recursive`

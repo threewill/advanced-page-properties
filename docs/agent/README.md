@@ -4,7 +4,7 @@ Repo-specific agent guidance lives **here**, not in the vendored standards folde
 
 | Path | What it is |
 | --- | --- |
-| [standards/](standards/) | Verbatim copy of [threewill-engineering-standards](https://github.com/threewill/threewill-engineering-standards). Never edit by hand. |
+| [standards/](standards/) | Curated public subset of [threewill-engineering-standards](https://github.com/threewill/threewill-engineering-standards) at SHA `5baefff`. See that folder’s README for what was left out. |
 | [context-harvest.md](context-harvest.md) | Harvested local-chat context, checked against code. |
 | [../decisions/DECISION-LOG.md](../decisions/DECISION-LOG.md) | Decision log D01–D23. |
 | [../plans/](../plans/) | Historical Cursor plans (completed). |

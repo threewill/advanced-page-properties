@@ -9,7 +9,7 @@ Whenever an image-generating tool returns a result — including **Replicate**, 
 
 ## Required gate
 
-After the image has been produced (and, where applicable, persisted locally per `replicate-image-handling.mdc`):
+After the image has been produced (and, where applicable, saved to a local path the user can open):
 
 1. **Show a preview** to the user. Acceptable preview methods, in order of preference:
    - Open the local file in the default image viewer (e.g. `Invoke-Item <path>` on Windows).
@@ -41,4 +41,4 @@ If the user asks for a re-render:
 
 ## Cross-references
 
-- `replicate-image-handling.mdc` — local-first persistence and consumption patterns specific to Replicate-style ephemeral URLs.
+This public subset does not include Replicate-specific download rules. Persist ephemeral image URLs locally before using them in mail, docs, or git, and still stop for preview-and-approve.

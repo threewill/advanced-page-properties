@@ -17,7 +17,7 @@ That split keeps standards honest (no false “compliance” with an uninstallab
 
 - **Search for breadth**, **fetch for depth**, **code sample search** for copy-pasteable official examples.
 - **Cite Learn**: include page title and URL when you rely on Learn content.
-- **Combine sources**: merge Learn with product-repo rules, code, and other MCPs (for example Work IQ for tenant-specific mail) without contradicting official limits or support statements from Learn.
+- **Combine sources**: merge Learn with product-repo rules, code, and other allowed sources without contradicting official limits or support statements from Learn.
 
 ## Tool workflow (typical server)
 

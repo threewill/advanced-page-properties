@@ -52,14 +52,14 @@ If the repo already has code, confirm it is SPFx by checking for:
 
 - **`.cursor/rules/`** in the product repo is the **threewill-engineering-standards** git submodule. It is **not** a normal folder for product-only `.mdc` files that should live in the **product** git history—those files cannot sit alongside the submodule checkout cleanly.
 - **Product-specific** Cursor context (domain terms, app-only integrations, naming) belongs in the product repository’s root **`AGENTS.md`**. Mention this during bootstrap and adoption so engineers and agents carve out product rules there. Template: `threewill-engineering-standards/templates/AGENTS.product.snippet.md`.
-- If **`git submodule add … .cursor/rules`** fails with *already exists and is not a valid git repo*: have the developer **rename** the existing folder (e.g. `Rename-Item -Path .cursor/rules -NewName rules.pre-threewill-backup`), then re-run `submodule add`, or use `tools/init-product-repo.ps1 -BackupExistingRules`. Do not advise deleting rules without a backup.
+- If **`git submodule add … .cursor/rules`** fails with *already exists and is not a valid git repo*: have the developer **rename** the existing folder (e.g. `Rename-Item -Path .cursor/rules -NewName rules.pre-threewill-backup`), then re-run `submodule add`. Do not advise deleting rules without a backup. This public product uses a **copy** under `docs/agent/standards/` instead of a submodule.
 - Do not instruct committing **product-only** edits inside the submodule working tree unless the change belongs in **threewill-engineering-standards** for all products (open a PR there instead).
 
 ### Adoption mode (existing repo adopts standards after the fact)
 
 Use Adoption mode when the repo already exists and the goal is to retrofit standards without re-scaffolding:
 
-1. **Mount standards**: Add `threewill-engineering-standards` as a git submodule at `.cursor/rules/` and run `git submodule update --init --recursive`. If `.cursor/rules` already exists as a normal folder, use backup-rename or `init-product-repo.ps1 -BackupExistingRules` (see **Standards submodule path and product-specific rules**).
+1. **Mount standards**: In private product repos, add `threewill-engineering-standards` as a git submodule at `.cursor/rules/` and run `git submodule update --init --recursive`. If `.cursor/rules` already exists as a normal folder, rename it first (see **Standards submodule path and product-specific rules**). This public product vendors a curated copy under `docs/agent/standards/` with thin `.cursor/rules` pointers.
 2. **Confirm SPFx version + toolchain**:
    - If SPFx is **1.22.0+**, expect **Heft** toolchain.
    - If SPFx is **≤1.21.x**, it may be legacy gulp-based; do not “upgrade by surprise.” Propose an upgrade plan if the team wants it.
@@ -166,9 +166,9 @@ If a web part renders a dashboard/app-shell experience, it must use the canonica
 - `patterns/ThreeWillFooter/ThreeWillFooter.tsx`
 - `patterns/ThreeWillFooter/ThreeWillFooter.module.scss`
 - `patterns/ThreeWillFooter/ThreeWill-headerLogo-onWhite.png`
-- Sync to `src/components/threewill/` via `tools/sync-spfx-patterns.ps1`
+- Copy those three files together into `src/components/threewill/` (do not skip the PNG)
 
-After syncing, render `<ThreeWillFooter />` from the app shell.
+After copying, render `<ThreeWillFooter />` from the app shell.
 
 ### ThreeWillFooter logo (avoid broken images)
 
@@ -176,7 +176,7 @@ The logo must be a **bundled static asset**, not a hand-typed SharePoint URL.
 
 - **Co-locate three files** in `src/components/threewill/`: `ThreeWillFooter.tsx`, `ThreeWillFooter.module.scss`, and **`ThreeWill-headerLogo-onWhite.png`** (same folder as the component). Filename and casing must match the import exactly.
 - **Do not** paste only the TSX/SCSS from the pattern repo and skip the PNG—the image will **404 or render blank** in the web part.
-- **Prefer** `tools/sync-spfx-patterns.ps1` so TSX, SCSS, PNG, and (when missing) `src/types/spfx-asset-modules.d.ts` stay aligned. The sync script copies the logo and seeds TypeScript `*.png` module declarations from `templates/spfx-asset-modules.d.ts` if the product repo does not already have that file.
+- **Prefer** copying the whole `patterns/ThreeWillFooter/` folder so TSX, SCSS, and PNG stay aligned. If `import … from '*.png'` fails typecheck, add `templates/spfx-asset-modules.d.ts` (or merge those declarations into an existing `src/types/*.d.ts`).
 - **Verify before deploy**: after `gulp bundle` / `heft build`, confirm `ThreeWill-headerLogo-onWhite.png` is present under `src/components/threewill/` in source control and that the browser **Network** tab shows the logo asset loading (no empty `img src` or 404 on the emitted file).
 - If the build fails on the logo import, ensure the product includes **`declare module '*.png'`** (use the standards template above or merge into an existing `src/types/*.d.ts` that is included by `tsconfig`).
 
