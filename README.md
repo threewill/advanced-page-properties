@@ -70,7 +70,7 @@ Version|Date|Comments
 1.0.2|Aug 29, 2024|Capsule search links (configurable)
 1.0.2.4|Sep 14, 2024|Configurable query string field for capsule link
 1.0.3|Sep 20, 2024|Added support for single-select taxonomy fields
-1.0.5||Added URL Page Properties web part with tile display support; Added Boolean field support with multiple display formats
+1.0.5|Jan 8, 2026|Display modes and text styles; Note fields; URL Page Properties web part (tiles); Boolean field formats
 1.0.5.3|May 24, 2026|URL Page Properties: embedded iframe display mode with configurable height and minimal chrome
 1.1.0.0|July 2026|SPFx 1.23 / Heft migration; PnPjs v4; Node 22; page list resolved via page context
 
@@ -92,7 +92,7 @@ This project is licensed under the [MIT License](LICENSE). See [SECURITY.md](SEC
 - In the command-line run:
   - **npm install** (uses `legacy-peer-deps` via `.npmrc`, standard for SPFx)
   - **npm start** (runs `heft start --clean`)
-- Update `config/serve.json` with your tenant workbench URL for page context during development
+- Tracked `config/serve.json` points at `https://localhost:5432/workbench`. Do **not** commit a tenant workbench URL. For page-context testing, use a hosted workbench or a deployed Site Page locally without changing the committed file.
 
 ### Deployment
 

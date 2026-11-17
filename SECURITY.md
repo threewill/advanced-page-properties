@@ -11,7 +11,7 @@
 
 If you discover a security issue, please **do not** open a public GitHub issue.
 
-Email security concerns to the maintainers at [ThreeWill](https://threewill.com) or open a private security advisory on GitHub once the repository is public.
+Email security concerns to the maintainers at [ThreeWill](https://threewill.com) or open a private [GitHub security advisory](https://github.com/threewill/advanced-page-properties/security/advisories) on this public repository.
 
 Include:
 
