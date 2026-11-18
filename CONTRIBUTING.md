@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Advanced Page Properties.
 
 1. Install Node.js **22.14+** (see `.nvmrc`)
 2. `npm install`
-3. `npm start` for local development (update `config/serve.json` with your tenant workbench URL)
+3. `npm start` for local development. `config/serve.json` uses the localhost workbench; **do not commit a tenant URL**.
 4. `npm run build` for a production `.sppkg`
 
 ## Pull requests

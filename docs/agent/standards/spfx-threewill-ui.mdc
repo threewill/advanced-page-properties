@@ -1,0 +1,216 @@
+---
+description: ThreeWill SPFx UI baseline
+globs:
+  - "**/*.tsx"
+  - "**/*.scss"
+  - "**/*.ts"
+---
+
+# ThreeWill SPFx UI baseline
+
+This rule is designed to make "ThreeWill look-and-feel" consistent across SPFx products by:
+
+- Using the same footer component (canonical pattern + PNG)
+- Using the same **dashboard and tile** layout as the DDS Referrals **KPI Dashboard**
+- Reusing shared semantic metric tones where applicable
+
+## SharePoint provisioning default
+
+Unless the user **explicitly** opts out, assume **lists and related schema are provisioned** so the solution works in each environment. Treat **PnP Provisioning Engine templates** as the **authoritative** structure and apply them with **deployment automation** (not ad-hoc manual setup as the default). Full rules: **`spfx-provisioning.mdc`**. PnPjs (`@pnp/sp`) should **consume** that schema for data access, not replace it as the source of truth for columns/lists.
+
+## SPFx solution bootstrap (new solution workflow)
+
+When the user says they are **starting a new SPFx solution** (blank web part, latest SPFx), treat it as a first-class workflow:
+
+- Assume the repo may be empty (no `config/package-solution.json` yet).
+- The goal is to first bootstrap a **standards-compliant baseline** (toolchain + dependencies + guardrails), then switch into solution-specific planning.
+
+### Bootstrap mode trigger (explicit)
+
+Enter Bootstrap mode when the user says any variant of:
+
+- “starting a new SPFx solution”
+- “blank SPFx web part”
+- “bootstrap a new SPFx project”
+
+### Detect SPFx (when code already exists)
+
+If the repo already has code, confirm it is SPFx by checking for:
+
+- `config/package-solution.json`
+- `src/webparts/**` and `*.manifest.json`
+- `package.json` containing `@microsoft/sp-*` dependencies
+
+### Node.js version (human prerequisite; agents do not run nvm)
+
+- The **required Node major** must match the SPFx compatibility matrix (e.g. SPFx **1.22.x** → **Node v22**).
+- **Switching Node is the developer’s job** (`nvm` / nvm-windows, `fnm`, Volta, or a direct install). **Do not** have the agent run `nvm use`, `nvm install`, or similar in Cursor—these commonly fail (approval dialogs, agent shell not inheriting nvm PATH, or profile scripts).
+- The agent **may** run `node -v` when the environment allows, or ask the developer to paste `node -v` after they switch.
+- If Node is wrong: **stop** before `npm install`, Yeoman scaffold, or build; give the developer **copy-paste commands** for their own terminal (example: `nvm install 22` then `nvm use 22`), then continue only after they confirm the correct version.
+
+### Standards submodule path and product-specific rules
+
+- **`.cursor/rules/`** in the product repo is the **threewill-engineering-standards** git submodule. It is **not** a normal folder for product-only `.mdc` files that should live in the **product** git history—those files cannot sit alongside the submodule checkout cleanly.
+- **Product-specific** Cursor context (domain terms, app-only integrations, naming) belongs in the product repository’s root **`AGENTS.md`**. Mention this during bootstrap and adoption so engineers and agents carve out product rules there. Template: `threewill-engineering-standards/templates/AGENTS.product.snippet.md`.
+- If **`git submodule add … .cursor/rules`** fails with *already exists and is not a valid git repo*: have the developer **rename** the existing folder (e.g. `Rename-Item -Path .cursor/rules -NewName rules.pre-threewill-backup`), then re-run `submodule add`. Do not advise deleting rules without a backup. This public product uses a **copy** under `docs/agent/standards/` instead of a submodule.
+- Do not instruct committing **product-only** edits inside the submodule working tree unless the change belongs in **threewill-engineering-standards** for all products (open a PR there instead).
+
+### Adoption mode (existing repo adopts standards after the fact)
+
+Use Adoption mode when the repo already exists and the goal is to retrofit standards without re-scaffolding:
+
+1. **Mount standards**: In private product repos, add `threewill-engineering-standards` as a git submodule at `.cursor/rules/` and run `git submodule update --init --recursive`. If `.cursor/rules` already exists as a normal folder, rename it first (see **Standards submodule path and product-specific rules**). This public product vendors a curated copy under `docs/agent/standards/` with thin `.cursor/rules` pointers.
+2. **Confirm SPFx version + toolchain**:
+   - If SPFx is **1.22.0+**, expect **Heft** toolchain.
+   - If SPFx is **≤1.21.x**, it may be legacy gulp-based; do not “upgrade by surprise.” Propose an upgrade plan if the team wants it.
+3. **Derive Node from SPFx** (Microsoft compatibility matrix) and align local tooling:
+   - Add or update `.nvmrc` to the required major (today’s baseline for 1.22.x is Node v22).
+   - Ensure the **developer** has switched to that Node version locally (see **Node.js version (human prerequisite; agents do not run nvm)** above).
+4. **Verify build before UI refactors**: Run the repo’s baseline build (`npm install`, then `build`) and fix environment issues first.
+5. **Adopt ThreeWill UI incrementally**:
+   - Add `<ThreeWillFooter />` for dashboard/app-shell surfaces.
+   - For dashboards: align to the KPI dashboard golden reference (tile grid, tones, progress wrap, error banner).
+   - For long forms: add header+footer action bars for primary actions.
+   - Prefer Fluent UI components and DDS-style IconButton norms for secondary chrome actions.
+6. **Default data access**: Prefer **PnPjs** (`@pnp/sp`) for list CRUD and queries. Keep it behind a small service layer so UI components remain testable and easy to refactor.
+7. **React component style**: Prefer **function components + hooks** for new/refactored UI. Avoid introducing new class components unless there’s a compelling reason.
+
+### Bootstrap mode sequence (do these in order)
+
+1. **Standards submodule**: Ensure `threewill-engineering-standards` is mounted at `.cursor/rules/` and initialized (`git submodule update --init --recursive`). The agent should not proceed until rules are available. If the path is blocked by an existing folder, follow **Standards submodule path and product-specific rules**. Ensure the product has root **`AGENTS.md`** for product-only context (create from template if missing).
+2. **Pick SPFx baseline**: Use **latest SPFx** and the **Heft toolchain** (SPFx v1.22.0+).
+3. **Derive Node from SPFx**: Use the official compatibility matrix (Microsoft Learn “SPFx compatibility”). Today’s baseline:
+   - SPFx **1.22.2**
+   - Node.js (LTS) **v22**
+   - React **17.0.1** (use `--save-exact`)
+   - TypeScript per matrix (range supported by SPFx 1.22.x)
+4. **Node version gate**: Confirm Node matches the matrix (see **Node.js version (human prerequisite; agents do not run nvm)**). If wrong, stop and have the **developer** switch Node in their own terminal; do not run `nvm` as the agent.
+5. **Scaffold the solution**: Generate a blank SPFx web part solution using the latest SPFx generator/tooling.
+6. **Normalize baseline dependencies**:
+   - Keep React pinned exactly per matrix.
+   - Use Fluent UI React v8 (`@fluentui/react`) as scaffolded by SPFx.
+   - Prefer PnPjs (`@pnp/sp`) for list access patterns (service wrapper recommended).
+7. **Baseline UX hooks ready**:
+   - Use CSS Modules (`*.module.scss`) (avoid global CSS).
+   - Keep dashboard/tile + footer patterns ready to adopt (even if the first web part isn’t a dashboard).
+   - Default new UI to function components + hooks.
+8. **Verify baseline build**: Ensure `build` (and ideally `package-solution`) succeeds before feature work.
+
+### Transition: bootstrap → planning
+
+After the baseline builds, switch to planning:
+
+- Gather solution requirements (data sources, list schema expectations, dashboard tiles, navigation, forms, roles).
+- Produce a plan that applies ThreeWill UI standards (dashboards/tiles + footer) where applicable.
+- Include **PnP provisioning templates** + **how deployment applies them** unless the user opted out (`spfx-provisioning.mdc`).
+
+## Golden reference (dashboards and tiles)
+
+The canonical dashboard UX and styling are defined by:
+
+- `DDS-Referrals/src/webparts/kpiDashboard/components/KpiDashboard.tsx`
+- `DDS-Referrals/src/webparts/kpiDashboard/components/KpiDashboard.module.scss`
+
+New or refactored dashboard web parts should **match that structure and SCSS tokens** (class names may differ per web part, but layout, spacing, typography, and colors should align).
+
+### Dashboard shell
+
+- Top **`headerRow`**: flex, space-between, gap ~12px, title **20px / font-weight 600 / color `#323130`**, **Refresh** `DefaultButton` on the right (disable while loading if appropriate).
+- Main content **`root`** (or equivalent): horizontal padding ~`8px 4px` (or section-level padding that does not fight the grid).
+
+### Tile grid
+
+- **`grid`**: `display: grid`; **`grid-template-columns: repeat(3, 1fr)`**; **`gap: 16px`**.
+- **Responsive**: at **~900px** → 2 columns; at **~560px** → 1 column.
+
+### Tile card structure (required shape)
+
+Each tile is a **card** with consistent inner structure:
+
+1. **Outer**: `tileLink` — use a real **`<a>`** when the tile navigates (e.g. list view), with `target="_blank"` and `rel="noopener noreferrer"`. When not clickable, use the same box with `tileDisabled` (reduced opacity, no pointer events). Preserve **`:focus-visible`** outline on the actionable surface (`outline: 2px solid #605e5c`, offset 2px).
+2. **Card chrome**: `border-radius: 12px`; `border: 1px solid #c8c6c4`; `background: #faf9f8`; light **`box-shadow`**; stronger shadow + darker border on **hover**.
+3. **`tileInner`**: padding **16px 18px**; `min-height` ~**168px**; column flex; vertical gap **12px**.
+4. **`tileHeader`**: row flex; icon + title; **bottom border** `1px solid #edebe9`; padding-bottom ~10px; gap ~10px.
+5. **`tileIcon`**: **32×32**; `border-radius: 8px`; `background: #edebe9`; center Fluent **`Icon`**; icon color `#323130`.
+6. **`tileTitle`**: **15px**; **font-weight 700**; color **`#201f1e`**.
+7. **`metrics`**: column of rows; each **`metricRow`** is flex, space-between, baseline-aligned, **13px** base.
+8. **`metricLabel`**: color **`#605e5c`**; **font-weight 600**; left-aligned; may wrap.
+9. **`metricValue`**: **18px**; **font-weight 700**; color **`#323130`**; nowrap.
+10. **Tones**: **`metricValueWarn`** → `#b8860b`; **`metricValueDanger`** → `#a80000` (use for at-risk / overdue / critical counts).
+11. **Optional `demoHint`**: **11px**, italic, muted gray (`#8a8886`), below metrics for definitions or data caveats.
+
+Prefer **grouping related KPIs** into one tile (multiple metric rows) instead of many unrelated giant number tiles, when it fits the scenario.
+
+### Progress / secondary summary band
+
+For a prominent progress bar or summary block (e.g. `ProgressIndicator`), use a **`progressWrap`** card: `border-radius: 12px`, border `#c8c6c4`, white background, light shadow, padding ~14–16px; **title row** with optional **meta** text on the right (12px, `#605e5c`).
+
+### Errors
+
+Use a bottom **`errorBanner`**: light red background, red border, readable error text (~12px) — match KPI dashboard treatment. `MessageBar` is acceptable if visually equivalent.
+
+### SCSS module
+
+- At top of dashboard SCSS: `@import '~@fluentui/react/dist/sass/References.scss';` when using Fluent theme tokens alongside custom rules.
+
+## Canonical ThreeWill footer (must match pattern)
+
+If a web part renders a dashboard/app-shell experience, it must use the canonical footer.
+
+- **Tagline**: `Solutions: Less Chaos. More Care.`
+- **Logo**: `ThreeWill-headerLogo-onWhite.png` co-located with the component
+- **Link behavior**: `data-interception="off"`; `target="_blank"` → `rel="noopener noreferrer"`
+
+### Implementation requirement
+
+- `patterns/ThreeWillFooter/ThreeWillFooter.tsx`
+- `patterns/ThreeWillFooter/ThreeWillFooter.module.scss`
+- `patterns/ThreeWillFooter/ThreeWill-headerLogo-onWhite.png`
+- Copy those three files together into `src/components/threewill/` (do not skip the PNG)
+
+After copying, render `<ThreeWillFooter />` from the app shell.
+
+### ThreeWillFooter logo (avoid broken images)
+
+The logo must be a **bundled static asset**, not a hand-typed SharePoint URL.
+
+- **Co-locate three files** in `src/components/threewill/`: `ThreeWillFooter.tsx`, `ThreeWillFooter.module.scss`, and **`ThreeWill-headerLogo-onWhite.png`** (same folder as the component). Filename and casing must match the import exactly.
+- **Do not** paste only the TSX/SCSS from the pattern repo and skip the PNG—the image will **404 or render blank** in the web part.
+- **Prefer** copying the whole `patterns/ThreeWillFooter/` folder so TSX, SCSS, and PNG stay aligned. If `import … from '*.png'` fails typecheck, add `templates/spfx-asset-modules.d.ts` (or merge those declarations into an existing `src/types/*.d.ts`).
+- **Verify before deploy**: after `gulp bundle` / `heft build`, confirm `ThreeWill-headerLogo-onWhite.png` is present under `src/components/threewill/` in source control and that the browser **Network** tab shows the logo asset loading (no empty `img src` or 404 on the emitted file).
+- If the build fails on the logo import, ensure the product includes **`declare module '*.png'`** (use the standards template above or merge into an existing `src/types/*.d.ts` that is included by `tsconfig`).
+
+## Other tiles / cards (non-dashboard)
+
+For non-dashboard surfaces, still keep neutrals and elevation subtle and reuse semantic tones consistent with DDS (warning / danger / success / info) where applicable.
+
+## UX norms (commands and actions)
+
+These are **norms** (preferred defaults) derived from DDS-Referrals. Deviate when product UX warrants it.
+
+### Circular icon actions (norm)
+
+Prefer Fluent **`IconButton`** for small, repeated, “chrome” actions:
+
+- Add/remove/reorder
+- Refresh/reload
+- Expand/collapse
+
+Requirements:
+
+- Always set `title` and `ariaLabel`.
+- Keep the touch target usable (don’t shrink below comfortable hit targets).
+- Use icon-only actions for secondary operations; keep primary actions as labeled buttons.
+
+### Repeated primary actions in long forms (header + footer bars)
+
+For long panels/forms where users may scroll, repeat the primary actions **at both the top and bottom**:
+
+- Top bar: immediate access when opening/editing.
+- Bottom bar: reduces scroll friction after reading/filling.
+
+Guidelines:
+
+- Use Fluent buttons (`PrimaryButton` / `DefaultButton`) for Save/Cancel style actions.
+- Ensure consistent disabled/loading state (don’t allow double-submit).
+- Keep alignment consistent (often “Cancel left, Save right”).

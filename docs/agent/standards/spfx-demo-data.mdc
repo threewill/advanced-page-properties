@@ -1,0 +1,28 @@
+---
+description: Demo data patterns (seed + refresh)
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
+
+## Demo data expectations for reusable SPFx products
+
+When a solution depends on demo SharePoint list data, it should provide a safe, repeatable way to keep that demo data “current-looking.”
+
+### Prefer two capabilities
+
+- **Seed**: create demo data from a controlled seed JSON (ideally tagged via `DemoRunId` or a dedicated marker column).
+- **Refresh**: update existing demo items’ date fields so the data looks current without manual re-entry.
+
+### Safety requirements
+
+- Any destructive action (clear lists, overwrite data) must prompt for confirmation and should be clearly labeled.
+- Prefer operating only on demo-tagged items (e.g. `DemoRunId` filter) rather than “all items in list.”
+
+### Implementation checklist
+
+- Identify all date/datetime fields used in dashboards, KPIs, and printouts.
+- Decide a refresh strategy:
+  - **Anchor-to-today**: preserve relative spacing but move the most recent activity to “today.”
+  - **Add-days**: apply a fixed delta to all configured fields.
+- Use batched SharePoint updates (PnP batching or `spHttpClient` batching pattern) with progress reporting.

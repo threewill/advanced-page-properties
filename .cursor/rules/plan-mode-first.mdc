@@ -1,0 +1,17 @@
+---
+description: Pointer to vendored plan-mode-first standard
+alwaysApply: true
+---
+
+# Pointer — plan-mode-first
+
+Follow the vendored ThreeWill engineering standard:
+[`docs/agent/standards/plan-mode-first.mdc`](../../docs/agent/standards/plan-mode-first.mdc)
+
+Do **not** edit docs/agent/standards/ by hand. Product-only overrides live in docs/agent/ and root AGENTS.md.
+
+If a path inside the vendored file says `.cursor/rules/...`, read `docs/agent/standards/...` instead.
+
+## This product
+
+Always plan first except bug fixes. Features, enhancements, and refactors need an approved plan. Bug fixes may go straight to a PR. Mike Homol reviews and merges.

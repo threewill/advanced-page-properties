@@ -1,0 +1,13 @@
+---
+description: Pointer to vendored generated-image-preview standard
+alwaysApply: true
+---
+
+# Pointer — generated-image-preview
+
+Follow the vendored ThreeWill engineering standard:
+[`docs/agent/standards/generated-image-preview.mdc`](../../docs/agent/standards/generated-image-preview.mdc)
+
+Do **not** edit docs/agent/standards/ by hand. Product-only overrides live in docs/agent/ and root AGENTS.md.
+
+If a path inside the vendored file says `.cursor/rules/...`, read `docs/agent/standards/...` instead.

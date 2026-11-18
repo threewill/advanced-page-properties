@@ -1,0 +1,38 @@
+---
+description: SharePoint list/schema provisioning (PnP templates + deployment)
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.xml"
+  - "**/provisioning/**"
+---
+
+# SharePoint list and schema provisioning
+
+## Default assumption (unless the user opts out)
+
+Unless the product owner or user **explicitly** says otherwise (for example: “use only pre-existing lists,” “manual provisioning only,” “customer supplies their own schema”):
+
+- **Lists, libraries, fields, views, and related site artifacts** the solution depends on are **provisioned as part of making the solution work** in each target environment—not left as informal one-off manual steps as the normal path.
+
+## Authoritative schema: PnP Provisioning Engine templates
+
+- Use **PnP Provisioning Engine** templates as the **single source of truth** for structure (lists, columns, content types, views, and other supported artifacts). Typical forms include XML templates consumed by `Invoke-PnPSiteTemplate` / PnP PowerShell, or packaged `.pnp` assets—choose what fits your deployment stack.
+- **Version templates in source control** next to the solution (for example under a `provisioning/` or `sharepoint/` folder).
+- **Application code** (including PnPjs) should **assume** that schema exists and **read/write data** against it. Do **not** treat app runtime as the primary place that **defines** list/column schema (avoid “create lists on first web part load” as the default pattern).
+
+## Application: deployment automation
+
+- Templates are applied by **deployment automation** (CI/CD pipeline, release script, tenant/site deployment job). Document the entry point (script name, pipeline stage, or runbook) so every environment is provisioned the same way.
+
+## Exceptions (explicit opt-out)
+
+When the user specifies an exception:
+
+- **Existing lists only**: document required list titles/internal names and any field contracts; templates may be minimal, environment-specific, or replaced by validation-only steps.
+- **No automated provisioning**: document manual checklist steps; keep the template (or equivalent spec) as the **reference** for what must exist so drift is visible.
+
+## Relationship to demo data
+
+- **Provisioning** = **structure** (schema, lists, views).
+- **Demo / seed content** = separate concern (see `spfx-demo-data.mdc`). Do not conflate “install solution” with “load demo rows” unless the product intentionally combines them and that is documented.
